@@ -3,6 +3,7 @@ package machine
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"sync/atomic"
 
 	"retronet-8008/cpu"
@@ -12,6 +13,8 @@ var (
 	ErrNilCPU               = errors.New("cpu 8008 non inizializzata")
 	ErrFrontPanelRunning    = errors.New("front panel in esecuzione")
 	ErrInvalidRestartVector = errors.New("vettore RST non valido")
+	ErrCPUWaiting           = errors.New("cpu 8008 in stato WAIT")
+	ErrInterruptPending     = errors.New("interrupt 8008 gia' pendente")
 )
 
 // PanelStopReason descrive perche' un run del front panel e' terminato.
@@ -21,7 +24,21 @@ const (
 	PanelStoppedByCPU     PanelStopReason = "cpu-stopped"
 	PanelStoppedByRequest PanelStopReason = "requested"
 	PanelStoppedByLimit   PanelStopReason = "limit"
+	PanelStoppedByReady   PanelStopReason = "waiting"
 )
+
+// CycleContext identifica il ciclo macchina sul quale viene campionato READY.
+type CycleContext struct {
+	PC        uint16
+	Opcode    byte
+	Mnemonic  string
+	Index     byte
+	Cycle     cpu.MachineCycle
+	Interrupt bool
+}
+
+// ReadyCallback decide se uno specifico ciclo puo' raggiungere T3.
+type ReadyCallback func(CycleContext) bool
 
 // PanelRunResult riassume un'esecuzione sincrona del front panel.
 type PanelRunResult struct {
@@ -35,12 +52,22 @@ type PanelStepObserver func(step uint64, state cpu.CPU8008) error
 
 // FrontPanelState e' una fotografia delle luci e dei selettori modellati.
 type FrontPanelState struct {
-	CPU           cpu.CPU8008
-	Switches      byte
-	Address       uint16
-	Data          byte
-	Running       bool
-	StopRequested bool
+	CPU              cpu.CPU8008
+	Switches         byte
+	Address          uint16
+	Data             byte
+	Running          bool
+	StopRequested    bool
+	Ready            bool
+	Waiting          bool
+	WaitCycle        CycleContext
+	InterruptPending bool
+}
+
+type interruptRequest struct {
+	code         byte
+	operands     [2]byte
+	operandCount byte
 }
 
 // FrontPanel coordina il core, la memoria e l'I/O come dispositivo esterno.
@@ -54,6 +81,19 @@ type FrontPanel struct {
 	address       atomic.Uint32
 	running       atomic.Bool
 	stopRequested atomic.Bool
+	ready         atomic.Bool
+	waiting       atomic.Bool
+
+	readyCallback   ReadyCallback
+	cycleActive     bool
+	cycleIndex      byte
+	activeOpcode    cpu.Opcode
+	activeInterrupt bool
+	activeRequest   interruptRequest
+	waitCycle       CycleContext
+
+	interruptMu      sync.Mutex
+	pendingInterrupt *interruptRequest
 }
 
 // NewFrontPanel crea un pannello sopra componenti gia' configurati.
@@ -64,7 +104,9 @@ func NewFrontPanel(c *cpu.CPU8008, memory cpu.Memory, ioBus cpu.IO) (*FrontPanel
 	if memory == nil {
 		return nil, cpu.ErrNilMemory
 	}
-	return &FrontPanel{cpu: c, memory: memory, io: ioBus}, nil
+	panel := &FrontPanel{cpu: c, memory: memory, io: ioBus}
+	panel.ready.Store(true)
+	return panel, nil
 }
 
 // SetSwitches imposta gli otto switch dati.
@@ -117,12 +159,61 @@ func (p *FrontPanel) AttachSwitches(ioBus *CallbackIO, port byte) error {
 	})
 }
 
+// SetReady imposta il livello READY globale usato senza callback specifica.
+func (p *FrontPanel) SetReady(ready bool) {
+	p.ready.Store(ready)
+}
+
+// Ready restituisce il livello READY globale.
+func (p *FrontPanel) Ready() bool {
+	return p.ready.Load()
+}
+
+// SetReadyCallback collega una policy READY per ciclo macchina.
+func (p *FrontPanel) SetReadyCallback(callback ReadyCallback) error {
+	if p.running.Load() {
+		return ErrFrontPanelRunning
+	}
+	p.readyCallback = callback
+	return nil
+}
+
+// RequestInterrupt accoda una istruzione da forzare al prossimo confine PCI.
+func (p *FrontPanel) RequestInterrupt(code byte, operands ...byte) error {
+	op := cpu.Decode(code)
+	want := int(op.Length - 1)
+	if len(operands) != want {
+		return fmt.Errorf("%w: opcode=0x%02X operands=%d want=%d", cpu.ErrInvalidJamInstruction, code, len(operands), want)
+	}
+	request := &interruptRequest{code: code, operandCount: byte(want)}
+	copy(request.operands[:], operands)
+
+	p.interruptMu.Lock()
+	defer p.interruptMu.Unlock()
+	if p.pendingInterrupt != nil {
+		return ErrInterruptPending
+	}
+	p.pendingInterrupt = request
+	return nil
+}
+
+// InterruptPending indica se una jam attende il prossimo confine PCI.
+func (p *FrontPanel) InterruptPending() bool {
+	p.interruptMu.Lock()
+	defer p.interruptMu.Unlock()
+	return p.pendingInterrupt != nil
+}
+
 // Reset applica il reset storico della CPU senza modificare i selettori.
 func (p *FrontPanel) Reset() error {
 	if p.running.Load() {
 		return ErrFrontPanelRunning
 	}
 	p.stopRequested.Store(false)
+	p.clearCycleState()
+	p.interruptMu.Lock()
+	p.pendingInterrupt = nil
+	p.interruptMu.Unlock()
 	p.cpu.Reset()
 	return nil
 }
@@ -132,6 +223,7 @@ func (p *FrontPanel) Jam(code byte, operands ...byte) error {
 	if p.running.Load() {
 		return ErrFrontPanelRunning
 	}
+	p.clearCycleState()
 	return p.cpu.Jam(p.memory, p.io, code, operands...)
 }
 
@@ -145,7 +237,77 @@ func (p *FrontPanel) InterruptRST(vector byte) error {
 
 // Step esegue una singola istruzione se la CPU e' in stato running.
 func (p *FrontPanel) Step() error {
-	return p.cpu.Step(p.memory, p.io)
+	if err := p.prepareCycles(); err != nil {
+		return err
+	}
+	for p.cycleIndex < p.activeOpcode.CycleCount {
+		context := CycleContext{
+			PC:        p.cpu.PC,
+			Opcode:    p.activeOpcode.Code,
+			Mnemonic:  p.activeOpcode.Mnemonic,
+			Index:     p.cycleIndex,
+			Cycle:     p.activeOpcode.Cycles[p.cycleIndex],
+			Interrupt: p.activeInterrupt,
+		}
+		ready := p.ready.Load()
+		if p.readyCallback != nil {
+			ready = p.readyCallback(context)
+		}
+		if !ready {
+			p.waitCycle = context
+			p.waiting.Store(true)
+			p.cpu.RecordWaitState()
+			return ErrCPUWaiting
+		}
+		p.cycleIndex++
+	}
+
+	interrupt := p.activeInterrupt
+	request := p.activeRequest
+	p.clearCycleState()
+	if !interrupt {
+		return p.cpu.Step(p.memory, p.io)
+	}
+	operands := request.operands[:request.operandCount]
+	if err := p.cpu.Jam(p.memory, p.io, request.code, operands...); err != nil {
+		return err
+	}
+	p.interruptMu.Lock()
+	p.pendingInterrupt = nil
+	p.interruptMu.Unlock()
+	return nil
+}
+
+func (p *FrontPanel) prepareCycles() error {
+	if p.cycleActive {
+		return nil
+	}
+	p.interruptMu.Lock()
+	if p.pendingInterrupt != nil {
+		p.activeRequest = *p.pendingInterrupt
+		p.activeOpcode = cpu.Decode(p.pendingInterrupt.code)
+		p.activeInterrupt = true
+	}
+	p.interruptMu.Unlock()
+	if !p.activeInterrupt {
+		if p.cpu.Halted || p.cpu.Stopped {
+			return cpu.ErrCPUStopped
+		}
+		p.activeOpcode = cpu.Decode(p.memory.Read(p.cpu.PC))
+	}
+	p.cycleActive = true
+	p.cycleIndex = 0
+	return nil
+}
+
+func (p *FrontPanel) clearCycleState() {
+	p.cycleActive = false
+	p.cycleIndex = 0
+	p.activeOpcode = cpu.Opcode{}
+	p.activeInterrupt = false
+	p.activeRequest = interruptRequest{}
+	p.waiting.Store(false)
+	p.waitCycle = CycleContext{}
 }
 
 // Stop richiede in modo concorrente l'arresto del prossimo ciclo Run.
@@ -166,7 +328,7 @@ func (p *FrontPanel) Run(limit uint64, observer PanelStepObserver) (PanelRunResu
 			result.Reason = PanelStoppedByRequest
 			return result, nil
 		}
-		if p.cpu.Halted || p.cpu.Stopped {
+		if (p.cpu.Halted || p.cpu.Stopped) && !p.InterruptPending() && !p.cycleActive {
 			result.Reason = PanelStoppedByCPU
 			return result, nil
 		}
@@ -176,6 +338,10 @@ func (p *FrontPanel) Run(limit uint64, observer PanelStepObserver) (PanelRunResu
 			}
 		}
 		if err := p.Step(); err != nil {
+			if errors.Is(err, ErrCPUWaiting) {
+				result.Reason = PanelStoppedByReady
+				return result, nil
+			}
 			if errors.Is(err, cpu.ErrCPUStopped) {
 				result.Reason = PanelStoppedByCPU
 				return result, nil
@@ -199,11 +365,15 @@ func (p *FrontPanel) Run(limit uint64, observer PanelStepObserver) (PanelRunResu
 func (p *FrontPanel) Snapshot() FrontPanelState {
 	address := p.Address()
 	return FrontPanelState{
-		CPU:           *p.cpu,
-		Switches:      p.Switches(),
-		Address:       address,
-		Data:          p.memory.Read(address),
-		Running:       p.running.Load(),
-		StopRequested: p.stopRequested.Load(),
+		CPU:              *p.cpu,
+		Switches:         p.Switches(),
+		Address:          address,
+		Data:             p.memory.Read(address),
+		Running:          p.running.Load(),
+		StopRequested:    p.stopRequested.Load(),
+		Ready:            p.ready.Load(),
+		Waiting:          p.waiting.Load(),
+		WaitCycle:        p.waitCycle,
+		InterruptPending: p.InterruptPending(),
 	}
 }

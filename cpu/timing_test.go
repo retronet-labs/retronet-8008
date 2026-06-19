@@ -90,7 +90,19 @@ func TestTimingCountersIncludeStepAndJam(t *testing.T) {
 	}
 
 	c.Reset()
-	if c.InstructionCount != 0 || c.StateCount != 0 || c.LastTiming.States != 0 {
+	if c.InstructionCount != 0 || c.StateCount != 0 || c.WaitStateCount != 0 || c.LastTiming.States != 0 {
 		t.Fatalf("timing after Reset = count %d states %d last %+v", c.InstructionCount, c.StateCount, c.LastTiming)
+	}
+}
+
+func TestRecordWaitStateIsAttachedToNextInstruction(t *testing.T) {
+	c := NewCPU8008()
+	c.RecordWaitState()
+	if err := c.Jam(NewFlatMemory(), nil, NOP()); err != nil {
+		t.Fatal(err)
+	}
+
+	if c.StateCount != 6 || c.WaitStateCount != 1 || c.LastTiming.WaitStates != 1 {
+		t.Fatalf("timing = states %d waits %d last %+v", c.StateCount, c.WaitStateCount, c.LastTiming)
 	}
 }

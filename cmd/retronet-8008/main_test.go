@@ -29,7 +29,7 @@ func TestRunLoadsProgramAndPrintsDump(t *testing.T) {
 		"A=0x2A",
 		"PC=0x0003",
 		"Halted=true Stopped=true",
-		"Timing instructions=3 states=23 last_states=4 last_cycles=[PCI]",
+		"Timing instructions=3 states=23 waits=0 last_states=4 last_waits=0 last_cycles=[PCI]",
 	}
 	for _, part := range wantParts {
 		if !strings.Contains(out, part) {
@@ -325,6 +325,63 @@ func TestRunFrontPanelSnapshotAndSwitchInput(t *testing.T) {
 		if !strings.Contains(out, part) {
 			t.Fatalf("output missing %q:\n%s", part, out)
 		}
+	}
+}
+
+func TestRunStopsInWaitWhenReadyIsLow(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.NOP()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-ready=false", "-steps", "8"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "steps=0 limit_reached=false stop_reason=waiting") {
+		t.Fatalf("output = %s, want waiting stop reason", out)
+	}
+	if !strings.Contains(out, "waits=1") {
+		t.Fatalf("output = %s, want one wait state", out)
+	}
+}
+
+func TestRunInjectsInterruptRSTBeforeFirstFetch(t *testing.T) {
+	program := make([]byte, 9)
+	program[0] = cpu.NOP()
+	program[8] = cpu.HLT()
+	bin := writeTempProgram(t, program)
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-interrupt-rst", "1", "-steps", "8"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	wantParts := []string{
+		"steps=2 limit_reached=false stop_reason=cpu-stopped",
+		"PC=0x0009 SP=1",
+		"Stack=[0x0000 0x0009",
+	}
+	for _, part := range wantParts {
+		if !strings.Contains(out, part) {
+			t.Fatalf("output missing %q:\n%s", part, out)
+		}
+	}
+}
+
+func TestRunRejectsInvalidInterruptRST(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.HLT()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-interrupt-rst", "8"}, &stdout, &stderr)
+
+	if code != 2 {
+		t.Fatalf("run exit = %d, want 2", code)
+	}
+	if !strings.Contains(stderr.String(), "interrupt-rst non valido") {
+		t.Fatalf("stderr = %s", stderr.String())
 	}
 }
 

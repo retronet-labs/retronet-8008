@@ -35,6 +35,7 @@ func (o Opcode) MachineCycles() []MachineCycle {
 // InstructionTiming descrive il costo effettivo dell'ultima istruzione.
 type InstructionTiming struct {
 	States      byte
+	WaitStates  uint64
 	CycleCount  byte
 	Cycles      [3]MachineCycle
 	Conditional bool

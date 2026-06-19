@@ -147,6 +147,115 @@ func TestFrontPanelInterruptRST(t *testing.T) {
 	}
 }
 
+func TestFrontPanelReadyWaitPreservesInstructionBoundary(t *testing.T) {
+	mem := cpu.NewFlatMemory()
+	mem.Write(0, cpu.NOP())
+	panel := newTestFrontPanel(t, mem, nil)
+	if err := panel.Jam(cpu.JMP(), 0x00, 0x00); err != nil {
+		t.Fatal(err)
+	}
+	panel.SetReady(false)
+
+	if err := panel.Step(); !errors.Is(err, ErrCPUWaiting) {
+		t.Fatalf("Step with READY low = %v, want ErrCPUWaiting", err)
+	}
+	state := panel.Snapshot()
+	if state.CPU.PC != 0 || !state.Waiting || state.WaitCycle.Cycle != cpu.CyclePCI {
+		t.Fatalf("waiting state = %+v", state)
+	}
+	if state.CPU.WaitStateCount != 1 {
+		t.Fatalf("WaitStateCount = %d, want 1", state.CPU.WaitStateCount)
+	}
+
+	panel.SetReady(true)
+	if err := panel.Step(); err != nil {
+		t.Fatal(err)
+	}
+	state = panel.Snapshot()
+	if state.CPU.PC != 1 || state.Waiting {
+		t.Fatalf("state after READY = %+v", state)
+	}
+	if state.CPU.LastTiming.WaitStates != 1 {
+		t.Fatalf("LastTiming.WaitStates = %d, want 1", state.CPU.LastTiming.WaitStates)
+	}
+}
+
+func TestFrontPanelReadyCallbackStopsOnPCC(t *testing.T) {
+	mem := cpu.NewFlatMemory()
+	mem.Write(0, cpu.OUT(8))
+	ioBus := NewCallbackIO()
+	panel := newTestFrontPanel(t, mem, ioBus)
+	if err := panel.Jam(cpu.JMP(), 0x00, 0x00); err != nil {
+		t.Fatal(err)
+	}
+	var seen []cpu.MachineCycle
+	allowPCC := false
+	if err := panel.SetReadyCallback(func(context CycleContext) bool {
+		seen = append(seen, context.Cycle)
+		return context.Cycle != cpu.CyclePCC || allowPCC
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := panel.Step(); !errors.Is(err, ErrCPUWaiting) {
+		t.Fatalf("Step = %v, want ErrCPUWaiting", err)
+	}
+	allowPCC = true
+	if err := panel.Step(); err != nil {
+		t.Fatal(err)
+	}
+	want := []cpu.MachineCycle{cpu.CyclePCI, cpu.CyclePCC, cpu.CyclePCC}
+	if len(seen) != len(want) {
+		t.Fatalf("seen cycles = %v, want %v", seen, want)
+	}
+	for i := range seen {
+		if seen[i] != want[i] {
+			t.Fatalf("seen cycles = %v, want %v", seen, want)
+		}
+	}
+}
+
+func TestFrontPanelInterruptWakesStoppedCPUWithoutAdvancingPC(t *testing.T) {
+	panel := newTestFrontPanel(t, cpu.NewFlatMemory(), nil)
+	if err := panel.RequestInterrupt(cpu.RST(3)); err != nil {
+		t.Fatal(err)
+	}
+	if err := panel.Step(); err != nil {
+		t.Fatal(err)
+	}
+
+	state := panel.Snapshot()
+	if state.InterruptPending || state.CPU.PC != 0x0018 || state.CPU.SP != 1 || state.CPU.Stack[0] != 0 {
+		t.Fatalf("state after interrupt = %+v", state)
+	}
+}
+
+func TestFrontPanelRejectsSecondPendingInterrupt(t *testing.T) {
+	panel := newTestFrontPanel(t, cpu.NewFlatMemory(), nil)
+	if err := panel.RequestInterrupt(cpu.NOP()); err != nil {
+		t.Fatal(err)
+	}
+	if err := panel.RequestInterrupt(cpu.NOP()); !errors.Is(err, ErrInterruptPending) {
+		t.Fatalf("second RequestInterrupt = %v, want ErrInterruptPending", err)
+	}
+}
+
+func TestFrontPanelRunStopsWhileWaitingForReady(t *testing.T) {
+	panel := newTestFrontPanel(t, cpu.NewFlatMemory(), nil)
+	if err := panel.Jam(cpu.NOP()); err != nil {
+		t.Fatal(err)
+	}
+	panel.SetReady(false)
+
+	result, err := panel.Run(8, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Steps != 0 || result.Reason != PanelStoppedByReady {
+		t.Fatalf("Run = %+v, want waiting", result)
+	}
+}
+
 func newTestFrontPanel(t *testing.T, mem cpu.Memory, ioBus cpu.IO) *FrontPanel {
 	t.Helper()
 	panel, err := NewFrontPanel(cpu.NewCPU8008(), mem, ioBus)

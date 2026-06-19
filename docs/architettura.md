@@ -99,6 +99,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Terminale virtuale buffered componibile con il trace I/O.
 - Front panel testabile usato come coordinatore dalla CLI.
 - Timing Intel per opcode, condizioni e contatori cumulativi.
+- READY per ciclo macchina e interrupt sincronizzato al confine PCI.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---

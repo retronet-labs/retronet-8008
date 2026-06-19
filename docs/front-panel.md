@@ -24,6 +24,8 @@ Il pannello espone:
 - `Reset` per applicare il reset storico
 - `Jam` per forzare una istruzione esterna
 - `InterruptRST(0..7)` per una jam vettorizzata
+- `SetReady`/`SetReadyCallback` per WAIT globale o per ciclo macchina
+- `RequestInterrupt` per una jam sincronizzata al prossimo confine PCI
 - `Snapshot` per fotografare CPU, switch, indirizzo e data bus
 
 `Deposit` usa il normale bus: una scrittura verso ROM resta bloccata da
@@ -56,6 +58,9 @@ modello.
 `InterruptRST(n)` forza `RST n`: incrementa lo stack pointer interno, conserva
 il PC corrente come ritorno e salta a `n*8`. Sono accettati solo i vettori
 `0..7`.
+
+Per simulare la linea hardware si usa invece `RequestInterrupt`: la richiesta
+resta pendente fino al prossimo confine PCI e puo' risvegliare una CPU stopped.
 
 ---
 

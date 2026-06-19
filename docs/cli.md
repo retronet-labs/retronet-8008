@@ -29,6 +29,8 @@ Opzioni:
 - `-panel`: stampa lo snapshot del front panel dopo il run.
 - `-panel-switches`: imposta gli switch dati e il latch input `0`.
 - `-panel-address`: seleziona l'indirizzo esaminato dal pannello.
+- `-ready`: livello READY globale; con `false` il run termina in WAIT.
+- `-interrupt-rst`: forza un vettore `RST 0..7` prima del primo fetch.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
 - `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
 - `-trace`: stampa ogni istruzione prima dell'esecuzione.
@@ -169,6 +171,9 @@ go run ./cmd/retronet-8008 -bin programma.bin -panel -panel-switches 0x4B -panel
 Gli switch alimentano la porta input convenzionale `0`; un eventuale
 `-input 0=...` precedente viene sostituito. L'indirizzo del pannello serve solo
 per la lettura mostrata e non modifica il PC.
+
+Il campo `stop_reason` distingue `cpu-stopped`, `requested`, `waiting` e
+`limit`. READY basso non viene riportato come errore e non incrementa `steps`.
 
 ---
 

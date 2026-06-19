@@ -32,9 +32,11 @@ type CPU8008 struct {
 	Stopped bool
 
 	// InstructionCount e StateCount includono anche istruzioni jammed.
-	InstructionCount uint64
-	StateCount       uint64
-	LastTiming       InstructionTiming
+	InstructionCount  uint64
+	StateCount        uint64
+	WaitStateCount    uint64
+	LastTiming        InstructionTiming
+	pendingWaitStates uint64
 }
 
 // NewCPU8008 crea una CPU nello stato di reset storico: registri azzerati e

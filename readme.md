@@ -69,6 +69,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - terminale ASCII buffered componibile con il trace I/O
 - front panel con jam, step/run/stop, switch ed examine/deposit
 - timing Intel con cicli macchina e contatori cumulativi
+- READY/WAIT per ciclo macchina e interrupt sincronizzato
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -136,6 +137,7 @@ retronet-8008/
 |-- docs/
 |   |-- architettura.md
 |   |-- cli.md
+|   |-- control-lines.md
 |   |-- decoder.md
 |   |-- disassembler.md
 |   |-- flags.md
@@ -182,7 +184,8 @@ radice ed e' importabile da CLI, esempi e test.
 18. Front panel e coordinamento esecuzione. Completato.
 19. Mappe e ROM storiche verificate. Rinviato in attesa delle fonti.
 20. Timing Intel e cicli macchina. Completato.
-21. READY, interrupt, debugger, conformance e periferiche generiche.
+21. READY e interrupt al confine PCI. Completato.
+22. Trace strutturato, debugger, conformance e periferiche generiche.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 

@@ -59,6 +59,7 @@ risultato effettivo.
 - `InstructionCount`: istruzioni completate
 - `StateCount`: stati Intel completati
 - `LastTiming`: costo e cicli dell'ultima istruzione
+- `WaitStateCount`: stati WAIT aggiunti dalla logica READY
 
 Le istruzioni forzate con `Jam` sono incluse nei contatori. La jam iniziale di
 `JMP` usata dalla CLI compare quindi nel totale, mentre il campo `steps` del
@@ -66,6 +67,9 @@ runner continua a contare solo le istruzioni eseguite dal programma.
 
 Gli errori prima del completamento dell'istruzione non incrementano i contatori.
 `Reset` azzera tutto il timing.
+
+Gli stati WAIT vengono aggiunti subito a `StateCount` e associati alla successiva
+istruzione completata tramite `LastTiming.WaitStates`.
 
 ---
 

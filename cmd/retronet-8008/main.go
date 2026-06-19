@@ -30,6 +30,9 @@ type runConfig struct {
 	panelSwitches byte
 	panelInputSet bool
 	panelAddress  uint16
+	ready         bool
+	interruptRST  byte
+	interruptSet  bool
 	roms          romFlags
 	inputs        inputFlags
 }
@@ -156,6 +159,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	}
 	panel.SetSwitches(cfg.panelSwitches)
 	panel.SetAddress(cfg.panelAddress)
+	panel.SetReady(cfg.ready)
 
 	var terminal *machine.Terminal
 	if cfg.terminal || cfg.terminalInput != "" {
@@ -214,13 +218,20 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "errore avvio CPU: %v\n", err)
 		return 1
 	}
+	if cfg.interruptSet {
+		if err := panel.RequestInterrupt(cpu.RST(cfg.interruptRST)); err != nil {
+			fmt.Fprintf(stderr, "errore interrupt: %v\n", err)
+			return 1
+		}
+	}
 
 	var trace io.Writer
 	if cfg.trace {
 		trace = stdout
 	}
-	executed, limitReached, err := runSteps(panel, mem, cfg.steps, trace)
-	printDump(stdout, c, cfg, loaded, len(cfg.roms), executed, limitReached)
+	executed, stopReason, err := runSteps(panel, mem, cfg.steps, trace)
+	limitReached := stopReason == machine.PanelStoppedByLimit
+	printDump(stdout, c, cfg, loaded, len(cfg.roms), executed, limitReached, stopReason)
 	if cfg.panel {
 		printPanel(stdout, panel.Snapshot())
 	}
@@ -244,6 +255,7 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	startPC := fs.String("pc", "", "program counter iniziale, default uguale ad -addr")
 	panelSwitches := fs.String("panel-switches", "", "valore degli switch dati, decimale o 0xHEX")
 	panelAddress := fs.String("panel-address", "", "indirizzo esaminato dal pannello, default uguale al PC iniziale")
+	interruptRST := fs.String("interrupt-rst", "", "forza RST 0..7 prima del primo fetch")
 	fs.StringVar(&cfg.binPath, "bin", "", "percorso del binario da caricare")
 	fs.StringVar(&cfg.profileName, "profile", "generic", "profilo macchina da usare")
 	fs.BoolVar(&cfg.listProfiles, "profiles", false, "elenca i profili macchina disponibili")
@@ -256,6 +268,7 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	fs.BoolVar(&cfg.terminal, "terminal", false, "collega un terminale ASCII alle porte convenzionali 0/8")
 	fs.StringVar(&cfg.terminalInput, "terminal-input", "", "accoda testo ASCII al terminale e abilita -terminal")
 	fs.BoolVar(&cfg.panel, "panel", false, "stampa lo stato del front panel dopo l'esecuzione")
+	fs.BoolVar(&cfg.ready, "ready", true, "livello READY globale; false ferma il run in WAIT")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
@@ -303,6 +316,14 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 		cfg.panelInputSet = true
 		cfg.panel = true
 	}
+	if *interruptRST != "" {
+		value, err := parseByte(*interruptRST)
+		if err != nil || value > 7 {
+			return cfg, fmt.Errorf("interrupt-rst non valido: usa un vettore 0..7")
+		}
+		cfg.interruptRST = value
+		cfg.interruptSet = true
+	}
 	return cfg, nil
 }
 
@@ -334,7 +355,7 @@ func parseByte(value string) (byte, error) {
 	return byte(n), nil
 }
 
-func runSteps(panel *machine.FrontPanel, mem cpu.Memory, limit uint64, trace io.Writer) (uint64, bool, error) {
+func runSteps(panel *machine.FrontPanel, mem cpu.Memory, limit uint64, trace io.Writer) (uint64, machine.PanelStopReason, error) {
 	var observer machine.PanelStepObserver
 	if trace != nil {
 		observer = func(step uint64, state cpu.CPU8008) error {
@@ -347,7 +368,7 @@ func runSteps(panel *machine.FrontPanel, mem cpu.Memory, limit uint64, trace io.
 		}
 	}
 	result, err := panel.Run(limit, observer)
-	return result.Steps, result.Reason == machine.PanelStoppedByLimit, err
+	return result.Steps, result.Reason, err
 }
 
 func printDisassembly(w io.Writer, mem cpu.Memory, pc uint16, count uint64) error {
@@ -415,13 +436,14 @@ func printProfiles(w io.Writer) {
 	}
 }
 
-func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, roms int, executed uint64, limitReached bool) {
-	fmt.Fprintf(w, "profile=%s loaded=%d roms=%d addr=0x%04X pc_start=0x%04X steps=%d limit_reached=%v\n", cfg.profileName, loaded, roms, cfg.loadAt, cfg.startPC, executed, limitReached)
+func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, roms int, executed uint64, limitReached bool, stopReason machine.PanelStopReason) {
+	fmt.Fprintf(w, "profile=%s loaded=%d roms=%d addr=0x%04X pc_start=0x%04X steps=%d limit_reached=%v stop_reason=%s\n", cfg.profileName, loaded, roms, cfg.loadAt, cfg.startPC, executed, limitReached, stopReason)
 	fmt.Fprintf(w, "A=0x%02X B=0x%02X C=0x%02X D=0x%02X E=0x%02X H=0x%02X L=0x%02X\n", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
 	fmt.Fprintf(w, "PC=0x%04X SP=%d Halted=%v Stopped=%v\n", c.PC, c.SP, c.Halted, c.Stopped)
 	fmt.Fprintf(w, "Flags C=%v Z=%v S=%v P=%v\n", c.Carry, c.Zero, c.Sign, c.Parity)
-	fmt.Fprintf(w, "Timing instructions=%d states=%d last_states=%d last_cycles=%s\n",
-		c.InstructionCount, c.StateCount, c.LastTiming.States, formatCycles(c.LastTiming.MachineCycles()))
+	fmt.Fprintf(w, "Timing instructions=%d states=%d waits=%d last_states=%d last_waits=%d last_cycles=%s\n",
+		c.InstructionCount, c.StateCount, c.WaitStateCount, c.LastTiming.States,
+		c.LastTiming.WaitStates, formatCycles(c.LastTiming.MachineCycles()))
 	fmt.Fprintf(w, "Stack=%s\n", formatStack(c.Stack))
 }
 
@@ -434,8 +456,9 @@ func formatCycles(cycles []cpu.MachineCycle) string {
 }
 
 func printPanel(w io.Writer, state machine.FrontPanelState) {
-	fmt.Fprintf(w, "panel address=0x%04X data=0x%02X switches=0x%02X running=%v stop_requested=%v\n",
-		state.Address, state.Data, state.Switches, state.Running, state.StopRequested)
+	fmt.Fprintf(w, "panel address=0x%04X data=0x%02X switches=0x%02X running=%v stop_requested=%v ready=%v waiting=%v interrupt_pending=%v\n",
+		state.Address, state.Data, state.Switches, state.Running, state.StopRequested,
+		state.Ready, state.Waiting, state.InterruptPending)
 }
 
 func formatStack(stack [8]uint16) string {

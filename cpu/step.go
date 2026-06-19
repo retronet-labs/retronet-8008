@@ -60,7 +60,16 @@ func (c *CPU8008) instructionTiming(op Opcode) InstructionTiming {
 }
 
 func (c *CPU8008) recordTiming(timing InstructionTiming) {
+	timing.WaitStates = c.pendingWaitStates
+	c.pendingWaitStates = 0
 	c.InstructionCount++
 	c.StateCount += uint64(timing.States)
 	c.LastTiming = timing
+}
+
+// RecordWaitState registra uno stato WAIT richiesto dalla logica macchina.
+func (c *CPU8008) RecordWaitState() {
+	c.StateCount++
+	c.WaitStateCount++
+	c.pendingWaitStates++
 }

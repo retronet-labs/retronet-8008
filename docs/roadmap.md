@@ -315,10 +315,28 @@ Contenuto:
 
 ---
 
+## Milestone 21 - READY e interrupt
+
+Stato: completata. Non dipende dalle milestone storiche 18 e 19.
+
+Contenuto:
+
+- linea READY globale e callback per singolo ciclo macchina
+- `CycleContext` con PCI/PCR/PCW/PCC e interrupt acknowledge
+- stato WAIT riprendibile senza avanzare PC o side-effect
+- contatori WAIT cumulativi e per istruzione
+- `RequestInterrupt` sincronizzato al prossimo confine PCI
+- risveglio da stopped tramite jam instruction
+- rifiuto di richieste interrupt sovrapposte
+- motivo di stop `waiting` nel front panel
+- opzioni CLI `-ready` e `-interrupt-rst`
+- test su WAIT PCI/PCC, timing, RST e CLI
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare
 - mappe memoria storiche piu' precise per Intellec e SCELBI
 - cassette e altre periferiche virtuali
-- READY e interrupt al confine dei cicli macchina
 - trace strutturato, debugger e conformance sintetica
