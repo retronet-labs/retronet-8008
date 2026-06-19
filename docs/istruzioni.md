@@ -3,6 +3,9 @@
 Questo documento raccoglie lo stato di implementazione delle famiglie
 istruzionali dell'Intel 8008.
 
+Gli esempi che chiamano `Step` assumono che la CPU sia gia' in stato running,
+ad esempio dopo una jam iniziale di `NOP`.
+
 ---
 
 ## Load e Move
@@ -231,7 +234,49 @@ Dopo la `CAL`, `PC = 0x0010`, `SP = 1` e `Stack[0] = 0x0003`. Dopo `RET`,
 
 ---
 
+## HLT, Stopped e Jam
+
+Stato: implementato.
+
+`HLT` ferma la CPU impostando sia `Halted` sia `Stopped`. Dopo il reset storico
+la CPU parte gia' in questo stato: una chiamata diretta a `Step` non effettua
+fetch da memoria e restituisce `ErrCPUStopped`.
+
+---
+
+## Come riparte la CPU
+
+L'8008 viene riavviato da una istruzione forzata dall'esterno. Nel progetto
+questo e' modellato da `Jam(mem, io, code, operands...)`, che:
+
+- valida il numero di operandi atteso dal decoder
+- cancella `Halted` e `Stopped`
+- esegue l'istruzione fornita senza leggere l'opcode dalla memoria
+
+Per avviare un programma in memoria durante test o esempi si puo' usare una jam
+di `NOP`, che lascia invariato il `PC`:
+
+```go
+c := cpu.NewCPU8008()
+_ = c.Jam(nil, nil, cpu.NOP())
+```
+
+Per modellare un interrupt reale e' piu' tipico usare `RST(n)`, cosi' il PC
+corrente resta nello stack interno e l'esecuzione riparte dal vettore `n * 8`.
+
+---
+
+## Test coperti
+
+- `HLT` e alias `0x00`/`0x01`
+- `Step` bloccato dopo reset o halt
+- jam di `NOP` per entrare in stato running
+- validazione del numero di operandi jammed
+- jam di `RST` da stato stopped
+- conservazione del return PC dopo `HLT` e `RST`
+
+---
+
 ## Da implementare
 
-- HLT/STOPPED.
 - I/O instructions.

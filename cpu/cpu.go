@@ -26,14 +26,14 @@ type CPU8008 struct {
 	Stack [8]uint16
 	SP    uint8 // Stack pointer interno, 3 bit
 
-	// Halted e Stopped modellano lo stato fermo storico del chip. La logica
-	// completa di HLT, interrupt e jam instruction arrivera' in milestone future.
+	// Halted e Stopped modellano lo stato fermo storico del chip. Reset e HLT
+	// fermano la CPU; Jam simula l'istruzione forzata da un interrupt esterno.
 	Halted  bool
 	Stopped bool
 }
 
 // NewCPU8008 crea una CPU nello stato di reset storico: registri azzerati e
-// processore fermo, in attesa della futura logica di interrupt/jam instruction.
+// processore fermo, in attesa di una jam instruction esterna.
 func NewCPU8008() *CPU8008 {
 	c := &CPU8008{}
 	c.Reset()
@@ -44,7 +44,7 @@ func NewCPU8008() *CPU8008 {
 //
 // A differenza di molte CPU successive, il comportamento storico dell'8008 al
 // power-on porta il processore in stato fermo. Per questo Reset imposta sia
-// Halted sia Stopped a true; l'uscita dallo stop sara' modellata piu' avanti.
+// Halted sia Stopped a true; l'uscita dallo stop avviene tramite Jam.
 func (c *CPU8008) Reset() {
 	*c = CPU8008{
 		Halted:  true,

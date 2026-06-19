@@ -25,7 +25,7 @@ voce contiene:
 Il primo byte di ogni istruzione e' sempre l'opcode. Alcune istruzioni leggono
 uno o due byte successivi:
 
-- 1 byte: register move, ALU register, rotate, return, reset, I/O
+- 1 byte: register move, ALU register, rotate, return, reset, halt, I/O
 - 2 byte: load immediati e ALU immediata
 - 3 byte: jump e call
 
@@ -42,10 +42,16 @@ Il package `cpu` espone:
 - `Decode(op byte) Opcode`
 - `OpcodeTable() [256]Opcode`
 - `Step(mem Memory, io IO) error`
+- `Jam(mem Memory, io IO, code byte, operands ...byte) error`
 
 `Step` legge l'opcode da `PC`, incrementa `PC`, legge gli eventuali operandi
 secondo `Opcode.Length`, poi chiama la funzione esecutiva associata. Gli opcode
 non ancora implementati restituiscono `ErrUnimplementedOpcode`.
+
+Se `Halted` o `Stopped` sono veri, `Step` non accede alla memoria e restituisce
+`ErrCPUStopped`. `Jam` modella l'istruzione forzata da un interrupt esterno:
+valida il numero di operandi, porta la CPU in stato running ed esegue
+l'istruzione senza fetch da memoria.
 
 ---
 
@@ -55,8 +61,10 @@ non ancora implementati restituiscono `ErrUnimplementedOpcode`.
 - Metadata di lunghezza per istruzioni da 1, 2 e 3 byte.
 - Mnemonici di base per le famiglie note.
 - `Step` con fetch opcode e operandi.
-- Esecuzione reale delle istruzioni load/move, ALU, rotate e control flow.
+- Esecuzione reale delle istruzioni load/move, ALU, rotate, control flow e HLT.
+- `Jam` per eseguire una istruzione esterna da stato stopped.
 - Wrap del `PC` a 14 bit.
+- Errore `ErrCPUStopped` quando `Step` viene chiamato a CPU ferma.
 - Errore tipizzato `UnimplementedOpcodeError`.
 - Test su tabella, lunghezze, mnemonici, fetch e PC.
 
@@ -64,7 +72,7 @@ non ancora implementati restituiscono `ErrUnimplementedOpcode`.
 
 ## Da implementare
 
-- Funzioni esecutive reali per HLT e I/O.
+- Funzioni esecutive reali per I/O.
 - Disassembler con contesto memoria.
 - Trace istruzione per istruzione.
 - Metadata temporali piu' accurati.

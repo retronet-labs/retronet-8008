@@ -48,6 +48,7 @@ livelli utili di ritorno quando una voce e' occupata dal PC corrente.
 - Helper primitivi per mascherare slot, SP e indirizzi.
 - Mirroring del PC corrente in `Stack[SP]`.
 - Push/pop impliciti per `CALL`, `RET` e `RST`.
+- Conservazione del return PC quando una jam `RST` riparte da `HLT`.
 - Overflow ciclico senza fault dopo l'ottavo livello fisico.
 - Test sul mascheramento a 14 bit, profondita' 7 e overflow ciclico.
 
@@ -55,4 +56,4 @@ livelli utili di ritorno quando una voce e' occupata dal PC corrente.
 
 ## Da implementare
 
-- Integrazione con la futura logica di interrupt/jam instruction.
+- Dettagli temporali della sequenza di interrupt reale.

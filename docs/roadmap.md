@@ -130,10 +130,26 @@ Contenuto:
 
 ---
 
+## Milestone 8 - HLT, stopped e jam instruction
+
+Stato: completata.
+
+Contenuto:
+
+- `HLT` e alias `0x00`/`0x01`
+- helper mini-assembler `HLT()`
+- `Step` bloccato da `Halted` o `Stopped`
+- errore `ErrCPUStopped`
+- `Jam(mem, io, code, operands...)` per istruzioni forzate dall'esterno
+- validazione operandi jammed con `ErrInvalidJamInstruction`
+- ripartenza da reset o halt tramite jam di `NOP` o `RST`
+- test su stop, halt, jam e return PC nello stack interno
+
+---
+
 ## Milestone successive
 
 Le istruzioni saranno implementate per famiglie:
 
-- halt e stato stopped
 - input/output
 - CLI con caricamento binario e dump registri

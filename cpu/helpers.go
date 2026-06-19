@@ -130,6 +130,9 @@ func aluImmediateOpcode(group byte) byte {
 	return 0x04 | ((group & 0x07) << 3)
 }
 
+// HLT costruisce l'opcode halt canonico.
+func HLT() byte { return 0x00 }
+
 // RLC ruota A a sinistra: bit 7 va in bit 0 e in Carry.
 func RLC() byte { return 0x02 }
 

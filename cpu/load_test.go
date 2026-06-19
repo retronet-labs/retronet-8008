@@ -3,7 +3,7 @@ package cpu
 import "testing"
 
 func TestLRegisterToRegister(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.B = 0x42
 	c.Carry = true
@@ -29,7 +29,7 @@ func TestLRegisterToRegister(t *testing.T) {
 }
 
 func TestLRegisterSelfIsNOP(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x9A
 	c.Carry = true
@@ -51,7 +51,7 @@ func TestLRegisterSelfIsNOP(t *testing.T) {
 }
 
 func TestLIRegisterImmediate(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	mem.Write(0x0000, LI(RegD))
 	mem.Write(0x0001, 0x8A)
@@ -69,7 +69,7 @@ func TestLIRegisterImmediate(t *testing.T) {
 }
 
 func TestLFromMReadsMemoryAtHL(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.H = 0x80
 	c.L = 0x20
@@ -86,7 +86,7 @@ func TestLFromMReadsMemoryAtHL(t *testing.T) {
 }
 
 func TestLToMWritesMemoryAtHL(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0xB6
 	c.H = 0x3F
@@ -103,7 +103,7 @@ func TestLToMWritesMemoryAtHL(t *testing.T) {
 }
 
 func TestLMIWritesImmediateToMemoryAtHL(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.H = 0xFF
 	c.L = 0x34

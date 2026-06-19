@@ -3,7 +3,7 @@ package cpu
 import "testing"
 
 func TestJMP(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	writeAddressedOpcode(mem, 0x0000, JMP(), 0x1234)
 
@@ -19,7 +19,7 @@ func TestJMP(t *testing.T) {
 }
 
 func TestJMPMasksTargetAddress(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	mem.Write(0x0000, JMP())
 	mem.Write(0x0001, 0x34)
@@ -48,7 +48,7 @@ func TestConditionalJumpTakenAndNotTaken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewCPU8008()
+			c := newRunningCPU(t)
 			c.Carry = tt.carry
 			mem := NewFlatMemory()
 			writeAddressedOpcode(mem, 0x0000, tt.opcode, 0x0200)
@@ -67,7 +67,7 @@ func TestConditionalJumpTakenAndNotTaken(t *testing.T) {
 }
 
 func TestCALAndRET(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	writeAddressedOpcode(mem, 0x0000, CAL(), 0x0010)
 	mem.Write(0x0010, RET())
@@ -115,7 +115,7 @@ func TestConditionalCallTakenAndNotTaken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewCPU8008()
+			c := newRunningCPU(t)
 			c.Zero = tt.zero
 			mem := NewFlatMemory()
 			writeAddressedOpcode(mem, 0x0000, tt.opcode, 0x0120)
@@ -153,7 +153,7 @@ func TestConditionalReturnTakenAndNotTaken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewCPU8008()
+			c := newRunningCPU(t)
 			c.Parity = tt.parity
 			c.setStack(0, 0x0222)
 			c.setSP(1)
@@ -178,7 +178,7 @@ func TestConditionalReturnTakenAndNotTaken(t *testing.T) {
 }
 
 func TestRST(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	mem.Write(0x0000, RST(3))
 
@@ -200,7 +200,7 @@ func TestRST(t *testing.T) {
 }
 
 func TestStackDepthSevenUsefulReturns(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 
 	for i := uint16(0); i < 7; i++ {
@@ -231,7 +231,7 @@ func TestStackDepthSevenUsefulReturns(t *testing.T) {
 }
 
 func TestStackOverflowWrapsSilently(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 
 	for i := uint16(0); i < 8; i++ {

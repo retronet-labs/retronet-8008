@@ -85,6 +85,9 @@ func TestLoadOpcodeHelpers(t *testing.T) {
 	if got := NOP(); got != 0xC0 {
 		t.Fatalf("NOP() = 0x%02X, want 0xC0", got)
 	}
+	if got := HLT(); got != 0x00 {
+		t.Fatalf("HLT() = 0x%02X, want 0x00", got)
+	}
 }
 
 func TestALUOpcodeHelpers(t *testing.T) {

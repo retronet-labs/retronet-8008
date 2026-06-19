@@ -6,7 +6,7 @@ import (
 )
 
 func TestStepRequiresMemory(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	c.setPC(0x1234)
 
 	err := c.Step(nil, nil)
@@ -20,30 +20,25 @@ func TestStepRequiresMemory(t *testing.T) {
 }
 
 func TestStepFetchesOpcodeAndAdvancesPC(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
-	mem.Write(0x0000, 0x00) // HLT, 1 byte, non ancora implementato
+	mem.Write(0x0000, NOP())
 
 	err := c.Step(mem, nil)
 
-	if !errors.Is(err, ErrUnimplementedOpcode) {
-		t.Fatalf("Step = %v, want ErrUnimplementedOpcode", err)
+	if err != nil {
+		t.Fatalf("Step = %v, want nil", err)
 	}
 	if c.PC != 0x0001 {
 		t.Fatalf("PC = 0x%04X, want 0x0001", c.PC)
 	}
-
-	var opErr *UnimplementedOpcodeError
-	if !errors.As(err, &opErr) {
-		t.Fatalf("Step error type = %T, want *UnimplementedOpcodeError", err)
-	}
-	if opErr.PC != 0x0000 || opErr.Opcode != 0x00 || opErr.Mnemonic != "HLT" || opErr.Length != 1 {
-		t.Fatalf("unexpected opcode error: %+v", opErr)
+	if c.Stack[0] != 0x0001 {
+		t.Fatalf("Stack[0] = 0x%04X, want current PC 0x0001", c.Stack[0])
 	}
 }
 
 func TestStepConsumesOperandsBeforeExecution(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	mem.Write(0x0100, 0x44) // JMP, 3 byte
 	mem.Write(0x0101, 0x34)
@@ -61,15 +56,15 @@ func TestStepConsumesOperandsBeforeExecution(t *testing.T) {
 }
 
 func TestStepPCWrapsAt14Bits(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
-	mem.Write(0x3FFF, 0x00) // HLT, 1 byte, non ancora implementato
+	mem.Write(0x3FFF, NOP())
 	c.setPC(0x3FFF)
 
 	err := c.Step(mem, nil)
 
-	if !errors.Is(err, ErrUnimplementedOpcode) {
-		t.Fatalf("Step = %v, want ErrUnimplementedOpcode", err)
+	if err != nil {
+		t.Fatalf("Step = %v, want nil", err)
 	}
 	if c.PC != 0x0000 {
 		t.Fatalf("PC = 0x%04X, want wrap to 0x0000", c.PC)
@@ -77,7 +72,7 @@ func TestStepPCWrapsAt14Bits(t *testing.T) {
 }
 
 func TestStepOperandFetchWrapsAt14Bits(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	mem.Write(0x3FFE, 0x44) // JMP, 3 byte
 	mem.Write(0x3FFF, 0xAA)

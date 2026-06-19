@@ -3,7 +3,7 @@ package cpu
 import "testing"
 
 func TestADRegister(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x14
 	c.B = 0x22
@@ -20,7 +20,7 @@ func TestADRegister(t *testing.T) {
 }
 
 func TestADCarryOutZeroParity(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0xFF
 	c.B = 0x01
@@ -37,7 +37,7 @@ func TestADCarryOutZeroParity(t *testing.T) {
 }
 
 func TestACUsesCarryIn(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x01
 	c.B = 0x01
@@ -55,7 +55,7 @@ func TestACUsesCarryIn(t *testing.T) {
 }
 
 func TestSUWithoutBorrow(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x05
 	c.B = 0x03
@@ -72,7 +72,7 @@ func TestSUWithoutBorrow(t *testing.T) {
 }
 
 func TestSUWithBorrow(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x03
 	c.B = 0x05
@@ -89,7 +89,7 @@ func TestSUWithBorrow(t *testing.T) {
 }
 
 func TestSBUsesBorrowIn(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x05
 	c.B = 0x03
@@ -107,7 +107,7 @@ func TestSBUsesBorrowIn(t *testing.T) {
 }
 
 func TestNDClearsCarryAndUpdatesFlags(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0xF0
 	c.B = 0x0F
@@ -125,7 +125,7 @@ func TestNDClearsCarryAndUpdatesFlags(t *testing.T) {
 }
 
 func TestXR(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0xFF
 	c.B = 0x0F
@@ -143,7 +143,7 @@ func TestXR(t *testing.T) {
 }
 
 func TestOR(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x80
 	c.B = 0x01
@@ -161,7 +161,7 @@ func TestOR(t *testing.T) {
 }
 
 func TestCPDoesNotModifyAccumulator(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x10
 	c.B = 0x10
@@ -178,7 +178,7 @@ func TestCPDoesNotModifyAccumulator(t *testing.T) {
 }
 
 func TestCPBorrowDoesNotModifyAccumulator(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x00
 	c.B = 0x01
@@ -195,7 +195,7 @@ func TestCPBorrowDoesNotModifyAccumulator(t *testing.T) {
 }
 
 func TestADIImmediate(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x02
 	mem.Write(0x0000, ADI())
@@ -215,7 +215,7 @@ func TestADIImmediate(t *testing.T) {
 }
 
 func TestSBIImmediateWithBorrowIn(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x04
 	c.Carry = true
@@ -233,7 +233,7 @@ func TestSBIImmediateWithBorrowIn(t *testing.T) {
 }
 
 func TestALUReadsMAtHL(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0x02
 	c.H = 0x40
@@ -251,7 +251,7 @@ func TestALUReadsMAtHL(t *testing.T) {
 }
 
 func TestINRDoesNotModifyCarry(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.B = 0xFF
 	c.Carry = true
@@ -268,7 +268,7 @@ func TestINRDoesNotModifyCarry(t *testing.T) {
 }
 
 func TestDCRDoesNotModifyCarry(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.B = 0x00
 	c.Carry = false

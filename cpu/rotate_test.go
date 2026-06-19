@@ -3,7 +3,7 @@ package cpu
 import "testing"
 
 func TestRLC(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0b1000_0001
 	c.Zero = true
@@ -25,7 +25,7 @@ func TestRLC(t *testing.T) {
 }
 
 func TestRRC(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0b1000_0001
 	c.Zero = true
@@ -47,7 +47,7 @@ func TestRRC(t *testing.T) {
 }
 
 func TestRALWithCarryClear(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0b0100_0001
 	c.Carry = false
@@ -70,7 +70,7 @@ func TestRALWithCarryClear(t *testing.T) {
 }
 
 func TestRALWithCarrySetAndCarryOut(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0b1000_0000
 	c.Carry = true
@@ -93,7 +93,7 @@ func TestRALWithCarrySetAndCarryOut(t *testing.T) {
 }
 
 func TestRARWithCarryClear(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0b0000_0010
 	c.Carry = false
@@ -116,7 +116,7 @@ func TestRARWithCarryClear(t *testing.T) {
 }
 
 func TestRARWithCarrySetAndCarryOut(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	c.A = 0b0000_0001
 	c.Carry = true
@@ -139,7 +139,7 @@ func TestRARWithCarrySetAndCarryOut(t *testing.T) {
 }
 
 func TestRotateAdvancesPC(t *testing.T) {
-	c := NewCPU8008()
+	c := newRunningCPU(t)
 	mem := NewFlatMemory()
 	mem.Write(0x0000, RLC())
 

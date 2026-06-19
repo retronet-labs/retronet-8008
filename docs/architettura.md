@@ -24,6 +24,7 @@ Questo documento descrive il modello generale del core CPU:
 - ALU instruction-level e gestione flag
 - rotate dell'accumulatore
 - control flow e stack interno
+- halt, stopped e jam instruction esterna
 
 ---
 
@@ -49,7 +50,9 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `FlatMemory` modella lo spazio diretto da 16 KB
 - `Ports` modella le porte input/output separate
 - `Decode` e `Step` gestiscono fetch e dispatch istruzione
+- `Jam` esegue un'istruzione fornita dall'esterno senza fetch da memoria
 - `L`, `LI` e `NOP` costruiscono opcode load/move per test ed esempi
+- `HLT` costruisce l'opcode halt canonico
 - gli helper ALU costruiscono opcode aritmetici e logici leggibili
 - `RLC`, `RRC`, `RAL` e `RAR` costruiscono opcode rotate leggibili
 - `JMP`, `JF`, `JT`, `CAL`, `CF`, `CT`, `RET`, `RF`, `RT` e `RST` costruiscono
@@ -67,16 +70,19 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - I/O separato con 8 porte input e 24 porte output.
 - Decoder tabellare da 256 opcode.
 - `Step` con fetch opcode, fetch operandi e incremento `PC`.
+- `Step` bloccato da `Halted` o `Stopped` con `ErrCPUStopped`.
+- `Jam` come modello didattico dell'istruzione forzata da interrupt esterno.
 - Istruzioni load/move tra registri, immediati e `M`.
 - Istruzioni ALU con registri, `M` e immediati.
 - Istruzioni rotate dell'accumulatore.
 - Istruzioni jump, call, return e restart con stack interno.
+- `HLT` e alias `0x00`/`0x01`.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
-- Famiglie istruzionali restanti: HLT e I/O.
-- Semantica completa di `HLT`, `STOPPED`, interrupt e jam instruction.
+- Famiglie istruzionali restanti: I/O.
+- Dettagli elettrici e temporali di interrupt e jam instruction reali.
 - Timing e T-state.

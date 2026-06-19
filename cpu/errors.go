@@ -12,6 +12,12 @@ var (
 	// ErrUnimplementedOpcode segnala un opcode valido nel decoder ma non ancora eseguito.
 	ErrUnimplementedOpcode = errors.New("opcode 8008 non implementato")
 
+	// ErrCPUStopped segnala che Step e' stato chiamato mentre la CPU e' ferma.
+	ErrCPUStopped = errors.New("cpu 8008 in stato stopped")
+
+	// ErrInvalidJamInstruction segnala una jam instruction con operandi incoerenti.
+	ErrInvalidJamInstruction = errors.New("jam instruction 8008 non valida")
+
 	// ErrInvalidInputPort segnala una porta di input fuori dal range 0..7.
 	ErrInvalidInputPort = errors.New("porta input 8008 non valida")
 
