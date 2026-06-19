@@ -59,6 +59,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - profili macchina base e caricamento ROM locali
 - profili SCELBI/Intellec documentati con metadata memoria e I/O
 - bus I/O a callback con input configurabile e trace CLI
+- bus memoria mappato con protezione ROM
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -74,6 +75,7 @@ restituiscono un errore esplicito.
 ```text
 retronet-8008/
 |-- go.mod
+|-- AGENTS.md
 |-- readme.md
 |-- cmd/
 |   `-- retronet-8008/
@@ -82,6 +84,8 @@ retronet-8008/
 |-- machine/
 |   |-- io.go
 |   |-- io_test.go
+|   |-- memory.go
+|   |-- memory_test.go
 |   |-- profile.go
 |   `-- profile_test.go
 |-- cpu/
@@ -157,7 +161,8 @@ radice ed e' importabile da CLI, esempi e test.
 13. Trace istruzione per istruzione. Completato.
 14. Profili macchina e caricamento ROM locali. Completato.
 15. Profili SCELBI/Intellec concreti e I/O callback. Completato.
-16. ROM storiche reali, periferiche, mappe memoria precise, timing e T-state.
+16. Bus memoria mappato e protezione ROM. Completato.
+17. Terminale, front panel, ROM storiche verificate, timing e T-state.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -171,4 +176,6 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 - Il repository non include ROM storiche.
 - Le porte callback `0` e `8` sono convenzioni di test, non mappe storiche
   definitive.
+- I profili storici proteggono le ROM caricate, ma non dichiarano ancora una
+  ripartizione ROM/RAM storicamente verificata.
 - Timing, T-state e dettagli elettrici dell'interrupt reale sono rimandati a milestone future.

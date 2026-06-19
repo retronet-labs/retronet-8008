@@ -10,7 +10,7 @@ import (
 
 const DefaultStepLimit = uint64(1000)
 
-// MemoryKind descrive il ruolo documentale di una regione memoria.
+// MemoryKind descrive il comportamento di una regione memoria.
 type MemoryKind string
 
 const (
@@ -87,7 +87,7 @@ var profiles = []Profile{
 		DefaultLoadAddress: 0x0000,
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
-		MemoryRegions:      flatMemoryRegion("direct-memory", "Spazio diretto 8008 usato come memoria piatta per test e binari raw."),
+		MemoryRegions:      flatMemoryRegion("direct-memory", MemoryKindRAM, "Spazio diretto 8008 usato come RAM piatta per test e binari raw."),
 	},
 	{
 		Name:               "intellec-8",
@@ -97,7 +97,7 @@ var profiles = []Profile{
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
 		ROMSlots:           monitorAndTestSlots(),
-		MemoryRegions:      flatMemoryRegion("intellec-direct-memory", "Spazio diretto massimo dell'8008; la ripartizione ROM/RAM storica verra' vincolata dopo verifica di monitor e schemi."),
+		MemoryRegions:      flatMemoryRegion("intellec-direct-memory", MemoryKindMixed, "Spazio diretto massimo dell'8008; resta scrivibile salvo gli intervalli occupati da ROM locali."),
 		IOPorts:            callbackConsolePorts(),
 		ROMHints:           monitorAndTestHints("Intel monitor o ROM diagnostica locale per Intellec 8."),
 	},
@@ -109,7 +109,7 @@ var profiles = []Profile{
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
 		ROMSlots:           monitorAndTestSlots(),
-		MemoryRegions:      flatMemoryRegion("scelbi-direct-memory", "Spazio diretto fino a 16 KB; il profilo non forza ancora una scheda RAM/ROM specifica."),
+		MemoryRegions:      flatMemoryRegion("scelbi-direct-memory", MemoryKindMixed, "Spazio diretto fino a 16 KB; resta scrivibile salvo gli intervalli occupati da ROM locali."),
 		IOPorts:            callbackConsolePorts(),
 		ROMHints:           monitorAndTestHints("SCELBI Monitor, Editor, Assembler o SCELBAL convertiti in binario locale."),
 	},
@@ -121,19 +121,19 @@ var profiles = []Profile{
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
 		ROMSlots:           monitorAndTestSlots(),
-		MemoryRegions:      flatMemoryRegion("scelbi-direct-memory", "Spazio diretto fino a 16 KB; il profilo non forza ancora una scheda RAM/ROM specifica."),
+		MemoryRegions:      flatMemoryRegion("scelbi-direct-memory", MemoryKindMixed, "Spazio diretto fino a 16 KB; resta scrivibile salvo gli intervalli occupati da ROM locali."),
 		IOPorts:            callbackConsolePorts(),
 		ROMHints:           monitorAndTestHints("SCELBI Monitor, SCELBAL o forth-scelbi.bin caricati come file locali."),
 	},
 }
 
-func flatMemoryRegion(name string, description string) []MemoryRegion {
+func flatMemoryRegion(name string, kind MemoryKind, description string) []MemoryRegion {
 	return []MemoryRegion{
 		{
 			Name:        name,
 			Start:       0x0000,
 			End:         cpu.AddressMask,
-			Kind:        MemoryKindMixed,
+			Kind:        kind,
 			Description: description,
 		},
 	}
@@ -234,6 +234,19 @@ func (p Profile) ROMSlot(name string) (ROMSlot, bool) {
 	return ROMSlot{}, false
 }
 
+// NewMemory crea il bus memoria mappato associato al profilo.
+func (p Profile) NewMemory() (*MemoryBus, error) {
+	return NewMemoryBus(p.MemoryRegions)
+}
+
+type byteLoader interface {
+	LoadBytes(addr uint16, data []byte) error
+}
+
+type romLoader interface {
+	LoadROM(addr uint16, data []byte) error
+}
+
 // LoadBytes carica data in memoria a partire da addr, senza wrap silenzioso.
 func LoadBytes(mem cpu.Memory, addr uint16, data []byte) error {
 	if mem == nil {
@@ -241,6 +254,9 @@ func LoadBytes(mem cpu.Memory, addr uint16, data []byte) error {
 	}
 	if err := ValidateRange(addr, len(data)); err != nil {
 		return err
+	}
+	if loader, ok := mem.(byteLoader); ok {
+		return loader.LoadBytes(addr, data)
 	}
 	for i, b := range data {
 		mem.Write(addr+uint16(i), b)
@@ -256,6 +272,9 @@ func (p Profile) LoadROM(mem cpu.Memory, name string, data []byte) error {
 	}
 	if slot.MaxSize > 0 && len(data) > slot.MaxSize {
 		return fmt.Errorf("ROM %q: %d byte superano il limite %d", name, len(data), slot.MaxSize)
+	}
+	if loader, ok := mem.(romLoader); ok {
+		return loader.LoadROM(slot.Address, data)
 	}
 	return LoadBytes(mem, slot.Address, data)
 }

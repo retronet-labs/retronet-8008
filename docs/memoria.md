@@ -7,9 +7,9 @@ Lo spazio memoria e' separato dallo spazio I/O.
 
 ## Cosa rappresenta
 
-La memoria contiene istruzioni e dati visibili alla CPU. In questa fase il
-progetto modella una memoria piatta da `0x0000` a `0x3FFF`, senza distinguere
-ancora ROM e RAM.
+La memoria contiene istruzioni e dati visibili alla CPU. Il progetto offre sia
+una memoria piatta per il core e i test, sia un bus macchina che distingue RAM,
+ROM e intervalli non mappati.
 
 ---
 
@@ -37,6 +37,23 @@ Il package `cpu` espone:
 
 `FlatMemory` maschera sempre gli indirizzi con `AddressMask`.
 
+Il package `machine` aggiunge:
+
+- `MemoryBus`, bus a regioni che implementa `cpu.Memory`
+- `NewMemoryBus(regions)`, con validazione di limiti e sovrapposizioni
+- `Profile.NewMemory()`, che costruisce il bus previsto da un profilo
+- `MemoryBus.LoadROM()`, caricamento privilegiato che protegge i byte caricati
+- `MemoryBus.LoadBytes()`, caricamento raw che rispetta la protezione ROM
+
+Una lettura da memoria non mappata restituisce `0xFF`. Una scrittura CPU verso
+ROM o memoria non mappata viene ignorata, perche' l'interfaccia `cpu.Memory` non
+prevede un valore di errore.
+
+Le regioni `mixed` dei profili storici partono scrivibili. Quando viene caricata
+una ROM locale, solo l'intervallo realmente occupato diventa ROM. Questa scelta
+permette una macchina utilizzabile senza spacciare per storica una ripartizione
+ROM/RAM ancora da verificare.
+
 ---
 
 ## Implementato ora
@@ -48,13 +65,15 @@ Il package `cpu` espone:
 - Uso di `M` come operando sorgente per la famiglia ALU.
 - Caricamento di binari raw dalla CLI.
 - Caricamento di ROM locali tramite slot di profilo.
-- Metadata `MemoryRegion` per descrivere le mappe macchina.
+- Bus `MemoryBus` che applica regioni RAM, ROM e mixed.
+- Protezione in scrittura degli intervalli ROM caricati.
+- Rifiuto di mappe sovrapposte e loader raw sopra ROM.
+- Open bus convenzionale a `0xFF` per indirizzi non mappati.
 - Test su zero init, lettura, scrittura e wrap degli indirizzi.
 
 ---
 
 ## Da implementare
 
-- Bus memoria che faccia rispettare regioni ROM in sola lettura.
 - Mappe ROM/RAM storiche verificate per SCELBI e Intellec.
 - Eventuale bank switching a livello macchina.

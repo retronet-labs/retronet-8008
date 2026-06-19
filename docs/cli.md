@@ -1,8 +1,9 @@
 # CLI
 
 La CLI `retronet-8008` e' un runner minimale per programmi 8008. Carica byte
-raw e ROM locali in `FlatMemory`, avvia la CPU tramite una jam di `JMP` al PC
-iniziale, esegue un numero massimo di istruzioni e stampa un dump registri.
+raw e ROM locali nel bus memoria del profilo, avvia la CPU tramite una jam di
+`JMP` al PC iniziale, esegue un numero massimo di istruzioni e stampa un dump
+registri.
 
 ---
 
@@ -109,8 +110,9 @@ Un profilo storico puo' ricevere ROM locali tramite slot nominati:
 go run ./cmd/retronet-8008 -profile intellec-8 -rom monitor=monitor.bin -steps 1000
 ```
 
-Le ROM vengono caricate prima del binario raw passato con `-bin`. Se le regioni
-si sovrappongono, il caricamento successivo sovrascrive i byte precedenti.
+Le ROM vengono caricate prima del binario raw passato con `-bin`. I byte ROM
+diventano read-only: un binario successivo puo' usare la RAM libera, ma una
+sovrapposizione viene rifiutata con un errore esplicito.
 
 ---
 
@@ -139,6 +141,8 @@ richiesto dall'I/O asimmetrico dell'8008.
 ## Limiti
 
 - Il formato supportato e' binario raw; non ci sono ancora container ROM.
+- Le mappe storiche ROM/RAM non sono ancora verificate; i profili proteggono
+  gli intervalli delle immagini ROM effettivamente caricate.
 - Le porte I/O usano `machine.CallbackIO`; non ci sono ancora periferiche
   complete.
 - Il repository non include ROM storiche: i file devono essere forniti

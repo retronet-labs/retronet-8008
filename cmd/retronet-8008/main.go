@@ -124,7 +124,11 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	}
 
 	c := cpu.NewCPU8008()
-	mem := cpu.NewFlatMemory()
+	mem, err := profile.NewMemory()
+	if err != nil {
+		fmt.Fprintf(stderr, "errore mappa memoria: %v\n", err)
+		return 2
+	}
 	ports := profile.NewIO()
 
 	for _, spec := range cfg.inputs {

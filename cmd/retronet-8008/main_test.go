@@ -213,6 +213,25 @@ func TestRunLoadsProfileROM(t *testing.T) {
 	}
 }
 
+func TestRunRejectsBinaryOverlappingROM(t *testing.T) {
+	rom := writeTempProgram(t, []byte{cpu.HLT()})
+	bin := writeTempProgram(t, []byte{cpu.NOP()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"-profile", "intellec-8",
+		"-rom", "monitor=" + rom,
+		"-bin", bin,
+	}, &stdout, &stderr)
+
+	if code != 1 {
+		t.Fatalf("run exit = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "memoria in sola lettura") {
+		t.Fatalf("stderr = %s, want read-only memory error", stderr.String())
+	}
+}
+
 func TestRunLoadsLocalTestROMWithIOTrace(t *testing.T) {
 	rom := writeTempProgram(t, []byte{
 		cpu.INP(0),

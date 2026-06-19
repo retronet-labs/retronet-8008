@@ -243,6 +243,24 @@ Contenuto:
 
 ---
 
+## Milestone 15 - Bus memoria mappato
+
+Stato: completata.
+
+Contenuto:
+
+- `machine.MemoryBus` compatibile con `cpu.Memory`
+- regioni RAM, ROM e mixed con validazione delle sovrapposizioni
+- `Profile.NewMemory()` usato dalla CLI
+- caricamento privilegiato delle immagini ROM
+- protezione delle ROM dalle scritture CPU e dai loader raw
+- open bus convenzionale a `0xFF` per memoria non mappata
+- profilo `generic` interamente RAM
+- profili storici mixed senza mappe ROM/RAM inventate
+- test unitari e integrazione CLI
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare

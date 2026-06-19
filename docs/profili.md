@@ -57,8 +57,14 @@ caricarli entrambi sovrappone i byte a partire da `0x0000`.
 
 ## Memoria e I/O del profilo
 
-La regione `0x0000-0x3FFF` e' descritta come `mixed`: puo' contenere ROM e RAM,
-ma la separazione non viene ancora fatta rispettare dal bus memoria.
+Il profilo `generic` mappa `0x0000-0x3FFF` come RAM. I profili storici
+descrivono lo stesso intervallo come `mixed`: parte scrivibile, ma ogni immagine
+caricata con `-rom` rende read-only il proprio intervallo effettivo.
+
+Il bus rifiuta regioni sovrapposte, restituisce `0xFF` per indirizzi non mappati
+e ignora le scritture CPU verso ROM. Questa e' una protezione reale, mentre la
+ripartizione storica precisa resta volutamente aperta finche' non sara'
+supportata da schemi o software verificabili.
 
 Per SCELBI e Intellec sono documentate due porte convenzionali:
 
@@ -99,8 +105,9 @@ ROM di profilo e un binario raw:
 go run ./cmd/retronet-8008 -profile intellec-8 -rom monitor=monitor.bin -bin programma.bin -addr 0x0100 -pc 0x0100
 ```
 
-In questo caso la ROM viene caricata prima e il binario raw dopo. Se le regioni
-si sovrappongono, l'ultimo caricamento vince.
+In questo caso la ROM viene caricata prima e il binario raw dopo. Il binario puo'
+occupare RAM libera, ma il loader segnala errore se prova a sovrascrivere byte
+ROM gia' protetti.
 
 ---
 
@@ -148,6 +155,8 @@ Il package `machine` espone:
 - `MemoryRegion`, `IOPort` e `ROMHint`: metadata di macchina leggibili.
 - `Profile.LoadROM(mem, name, data)`: caricamento di una ROM nello slot del
   profilo.
+- `Profile.NewMemory()`: costruzione del bus mappato del profilo.
+- `MemoryBus`: memoria a regioni con ROM protetta e open bus a `0xFF`.
 - `LoadBytes(mem, addr, data)`: caricamento raw con validazione 14 bit.
 - `ValidateRange(addr, size)`: controllo di range senza wrap silenzioso.
 - `CallbackIO`: bus I/O con latch e callback per porta.
@@ -162,7 +171,8 @@ slot, regioni, porte o suggerimenti ROM non alterano il catalogo globale.
 ## Limiti dichiarati
 
 - Nessuna ROM storica e' inclusa nel repository.
-- `FlatMemory` non protegge ancora le regioni ROM dalle scritture.
+- Le regioni `mixed` non rappresentano ancora una mappa ROM/RAM storica
+  verificata; la protezione segue le immagini effettivamente caricate.
 - Le porte callback `0` e `8` sono convenzioni di test, non mappe storiche.
 - Front panel, terminale, cassette, PROM programmer e bank switching non sono
   ancora periferiche emulate.
