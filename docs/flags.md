@@ -37,7 +37,7 @@ Le istruzioni condizionali selezionano un flag con due bit:
 
 `CPU8008` contiene i campi booleani `Carry`, `Zero`, `Sign` e `Parity`. Le
 costanti `CondCarry`, `CondZero`, `CondSign` e `CondParity` fissano i codici
-condizione per decoder e helper futuri.
+condizione per decoder, helper e istruzioni condizionali.
 
 La funzione interna che aggiorna `Zero`, `Sign` e `Parity` usa il byte risultato.
 `Parity` vale true quando il numero di bit a 1 e' pari.
@@ -56,9 +56,10 @@ La funzione interna che aggiorna `Zero`, `Sign` e `Parity` usa il byte risultato
 - `CMP`/`CP` aggiorna i flag senza modificare `A`.
 - `INR` e `DCR` aggiornano `Zero`, `Sign` e `Parity` senza modificare Carry.
 - Rotate aggiorna solo Carry e lascia invariati `Zero`, `Sign` e `Parity`.
+- Jump, call e return condizionali leggono i flag senza modificarli.
 
 ---
 
 ## Da implementare
 
-- Salti, call e return condizionali.
+- Eventuali dettagli temporali delle istruzioni condizionali.

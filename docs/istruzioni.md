@@ -174,8 +174,64 @@ Carry, mentre il vecchio Carry entra nel bit 0.
 
 ---
 
+## Control Flow e Stack
+
+Stato: implementato.
+
+Le istruzioni di controllo di flusso modificano `PC` e, per call/restart/return,
+usano lo stack interno a 8 voci dell'8008.
+
+---
+
+## Operazioni implementate
+
+| Famiglia | Helper | Effetto |
+|----------|--------|---------|
+| Jump incondizionato | `JMP()` | `PC = target` |
+| Jump se flag false | `JF(cond)` | salta se il flag selezionato e' `false` |
+| Jump se flag true | `JT(cond)` | salta se il flag selezionato e' `true` |
+| Call incondizionata | `CAL()` | salva ritorno e salta a `target` |
+| Call se flag false | `CF(cond)` | call condizionata su flag `false` |
+| Call se flag true | `CT(cond)` | call condizionata su flag `true` |
+| Return incondizionato | `RET()` | ripristina il PC dallo stack interno |
+| Return se flag false | `RF(cond)` | return condizionato su flag `false` |
+| Return se flag true | `RT(cond)` | return condizionato su flag `true` |
+| Restart | `RST(n)` | call al vettore `n * 8` |
+
+I target a 3 byte sono codificati little-endian: byte basso, poi byte alto. Del
+byte alto vengono usati solo i 6 bit bassi, quindi l'indirizzo resta sempre nel
+range `0x0000-0x3FFF`.
+
+---
+
+## Esempio
+
+```go
+mem.Write(0x0000, cpu.CAL())
+mem.Write(0x0001, 0x10)
+mem.Write(0x0002, 0x00)
+mem.Write(0x0010, cpu.RET())
+```
+
+Dopo la `CAL`, `PC = 0x0010`, `SP = 1` e `Stack[0] = 0x0003`. Dopo `RET`,
+`PC = 0x0003` e `SP = 0`.
+
+---
+
+## Test coperti
+
+- jump incondizionato e indirizzi a 14 bit
+- jump condizionali presi e non presi
+- call e return con indirizzo di ritorno
+- call e return condizionali presi e non presi
+- restart verso `n * 8`
+- profondita' utile 7 dello stack interno
+- overflow ciclico senza errore
+- helper opcode
+
+---
+
 ## Da implementare
 
-- Control flow.
 - HLT/STOPPED.
 - I/O instructions.

@@ -28,9 +28,16 @@ sovrascritta senza fault.
 - `Stack [8]uint16`
 - `SP uint8`
 
-Gli helper interni mascherano gli indirizzi a 14 bit e `SP` a 3 bit. La semantica
-esatta di push/pop per `CALL`, `RET` e `RST` sara' fissata nella milestone sul
-controllo di flusso.
+Gli helper interni mascherano gli indirizzi a 14 bit e `SP` a 3 bit. `SP`
+punta allo slot che contiene il PC corrente:
+
+- durante il fetch, `setPC` aggiorna sia `PC` sia `Stack[SP]`
+- `CALL` e `RST` avanzano `SP`, poi scrivono nello slot nuovo il target
+- lo slot precedente conserva l'indirizzo di ritorno gia' avanzato dal fetch
+- `RET` arretra `SP` e ripristina il PC dallo slot raggiunto
+
+Questa scelta riflette la struttura interna dell'8008: 8 voci fisiche, ma 7
+livelli utili di ritorno quando una voce e' occupata dal PC corrente.
 
 ---
 
@@ -39,12 +46,13 @@ controllo di flusso.
 - Campi stack e stack pointer nello stato CPU.
 - Reset a zero dello stack.
 - Helper primitivi per mascherare slot, SP e indirizzi.
-- Test sul mascheramento a 14 bit.
+- Mirroring del PC corrente in `Stack[SP]`.
+- Push/pop impliciti per `CALL`, `RET` e `RST`.
+- Overflow ciclico senza fault dopo l'ottavo livello fisico.
+- Test sul mascheramento a 14 bit, profondita' 7 e overflow ciclico.
 
 ---
 
 ## Da implementare
 
-- Push/pop effettivi.
-- `CALL`, `RET` e `RST`.
-- Test di profondita' 1, profondita' 7 e overflow ciclico.
+- Integrazione con la futura logica di interrupt/jam instruction.

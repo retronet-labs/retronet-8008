@@ -55,6 +55,7 @@ func (c *CPU8008) Reset() {
 // setPC aggiorna il program counter applicando il limite a 14 bit.
 func (c *CPU8008) setPC(addr uint16) {
 	c.PC = addr14(addr)
+	c.Stack[c.SP] = c.PC
 }
 
 // setSP aggiorna lo stack pointer interno applicando il limite a 3 bit.
@@ -63,8 +64,7 @@ func (c *CPU8008) setSP(sp uint8) {
 }
 
 // setStack salva un indirizzo in una voce dello stack interno, mascherandolo a
-// 14 bit. Non implementa ancora la semantica CALL/RET: quella arrivera' con il
-// controllo di flusso.
+// 14 bit.
 func (c *CPU8008) setStack(slot uint8, addr uint16) {
 	c.Stack[stackIndex(slot)] = addr14(addr)
 }

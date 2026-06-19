@@ -39,7 +39,7 @@ Quando viene usato `M`, l'indirizzo e' formato da `H:L`. Solo i 6 bit bassi di
 `HL()` restituisce l'indirizzo a 14 bit puntato da `H` e `L`.
 
 Le costanti `RegA` ... `RegM` rappresentano i codici registro usati dal decoder
-e dai futuri helper opcode.
+e dagli helper opcode.
 
 ---
 
@@ -51,10 +51,10 @@ e dai futuri helper opcode.
 - Load e move tra registri.
 - Load immediati.
 - Lettura e scrittura del pseudo-registro `M`.
+- ALU e flag sui registri.
 
 ---
 
 ## Da implementare
 
-- ALU e flag sui registri.
-- Istruzioni di controllo di flusso che usano registri e condizioni.
+- Nessuna semantica registro di base nota da aggiungere in questa fase.

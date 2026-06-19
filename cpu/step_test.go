@@ -42,7 +42,7 @@ func TestStepFetchesOpcodeAndAdvancesPC(t *testing.T) {
 	}
 }
 
-func TestStepConsumesOperandsBeforeUnimplementedError(t *testing.T) {
+func TestStepConsumesOperandsBeforeExecution(t *testing.T) {
 	c := NewCPU8008()
 	mem := NewFlatMemory()
 	mem.Write(0x0100, 0x44) // JMP, 3 byte
@@ -52,11 +52,11 @@ func TestStepConsumesOperandsBeforeUnimplementedError(t *testing.T) {
 
 	err := c.Step(mem, nil)
 
-	if !errors.Is(err, ErrUnimplementedOpcode) {
-		t.Fatalf("Step = %v, want ErrUnimplementedOpcode", err)
+	if err != nil {
+		t.Fatalf("Step = %v, want nil", err)
 	}
-	if c.PC != 0x0103 {
-		t.Fatalf("PC = 0x%04X, want 0x0103", c.PC)
+	if c.PC != 0x1234 {
+		t.Fatalf("PC = 0x%04X, want 0x1234", c.PC)
 	}
 }
 
@@ -86,10 +86,10 @@ func TestStepOperandFetchWrapsAt14Bits(t *testing.T) {
 
 	err := c.Step(mem, nil)
 
-	if !errors.Is(err, ErrUnimplementedOpcode) {
-		t.Fatalf("Step = %v, want ErrUnimplementedOpcode", err)
+	if err != nil {
+		t.Fatalf("Step = %v, want nil", err)
 	}
-	if c.PC != 0x0001 {
-		t.Fatalf("PC = 0x%04X, want 0x0001", c.PC)
+	if c.PC != 0x3BAA {
+		t.Fatalf("PC = 0x%04X, want 0x3BAA", c.PC)
 	}
 }

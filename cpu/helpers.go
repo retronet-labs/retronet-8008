@@ -141,3 +141,36 @@ func RAL() byte { return 0x12 }
 
 // RAR ruota A a destra attraverso Carry.
 func RAR() byte { return 0x1A }
+
+// JMP costruisce un jump incondizionato a 3 byte.
+//
+// I due byte indirizzo vanno scritti dopo l'opcode, low byte prima e high byte
+// poi. Del byte alto vengono usati solo i 6 bit bassi.
+func JMP() byte { return 0x44 }
+
+// JF costruisce un jump condizionato se il flag indicato e' false.
+func JF(cond Condition) byte { return 0x40 | (condBits(cond) << 3) }
+
+// JT costruisce un jump condizionato se il flag indicato e' true.
+func JT(cond Condition) byte { return 0x60 | (condBits(cond) << 3) }
+
+// CAL costruisce una call incondizionata a 3 byte.
+func CAL() byte { return 0x46 }
+
+// CF costruisce una call condizionata se il flag indicato e' false.
+func CF(cond Condition) byte { return 0x42 | (condBits(cond) << 3) }
+
+// CT costruisce una call condizionata se il flag indicato e' true.
+func CT(cond Condition) byte { return 0x62 | (condBits(cond) << 3) }
+
+// RET costruisce un return incondizionato.
+func RET() byte { return 0x07 }
+
+// RF costruisce un return condizionato se il flag indicato e' false.
+func RF(cond Condition) byte { return 0x03 | (condBits(cond) << 3) }
+
+// RT costruisce un return condizionato se il flag indicato e' true.
+func RT(cond Condition) byte { return 0x23 | (condBits(cond) << 3) }
+
+// RST costruisce una restart/call a vettore pagina zero n*8.
+func RST(n byte) byte { return 0x05 | ((n & 0x07) << 3) }

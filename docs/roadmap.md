@@ -112,11 +112,28 @@ Contenuto:
 
 ---
 
+## Milestone 7 - Control flow e stack
+
+Stato: completata.
+
+Contenuto:
+
+- `JMP`, `JF` e `JT`
+- `CAL`, `CF` e `CT`
+- `RET`, `RF` e `RT`
+- `RST n`
+- target a 14 bit con low byte e high byte mascherato
+- stack interno con `SP` a 3 bit e PC corrente in `Stack[SP]`
+- overflow ciclico senza fault
+- helper mini-assembler per control flow
+- test su salto, call, return, restart e profondita' stack
+
+---
+
 ## Milestone successive
 
 Le istruzioni saranno implementate per famiglie:
 
-- jump, call, return e restart
 - halt e stato stopped
 - input/output
 - CLI con caricamento binario e dump registri

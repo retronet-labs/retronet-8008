@@ -35,11 +35,12 @@ Il progetto ha completato le prime milestone fondamentali:
 - istruzioni load/move
 - istruzioni ALU e gestione flag
 - istruzioni rotate dell'accumulatore
+- istruzioni jump, call, return e restart
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
 reset storico in stato fermo, memoria diretta, porte I/O, metadata del decoder e
-le prime famiglie istruzionali eseguibili. Gli opcode non ancora implementati
+le famiglie istruzionali iniziali eseguibili. Gli opcode non ancora implementati
 restituiscono un errore esplicito.
 
 ---
@@ -55,6 +56,7 @@ retronet-8008/
 |       `-- main.go
 |-- cpu/
 |   |-- alu.go
+|   |-- control.go
 |   |-- cpu.go
 |   |-- decoder.go
 |   |-- errors.go
@@ -67,6 +69,7 @@ retronet-8008/
 |   |-- rotate.go
 |   |-- step.go
 |   |-- alu_test.go
+|   |-- control_test.go
 |   |-- cpu_test.go
 |   |-- decoder_test.go
 |   |-- helpers_test.go
@@ -105,7 +108,7 @@ radice ed e' importabile da CLI, esempi e test.
 5. Load e move. Completato.
 6. ALU e flag. Completato.
 7. Rotate. Completato.
-8. Control flow.
+8. Control flow e stack interno. Completato.
 9. Famiglie istruzionali successive, una alla volta, con test e documentazione.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
@@ -115,5 +118,5 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 # Limiti noti
 
 - La CLI non carica ancora programmi.
-- Load/move, ALU e rotate sono implementate; salti, HLT e I/O istruzionale mancano ancora.
+- Load/move, ALU, rotate e control flow sono implementate; HLT e I/O istruzionale mancano ancora.
 - Timing, T-state e interrupt/jam instruction sono rimandati a milestone future.

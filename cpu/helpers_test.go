@@ -138,3 +138,29 @@ func TestRotateOpcodeHelpers(t *testing.T) {
 		}
 	}
 }
+
+func TestControlFlowOpcodeHelpers(t *testing.T) {
+	tests := []struct {
+		name string
+		got  byte
+		want byte
+	}{
+		{"JMP", JMP(), 0x44},
+		{"JFC", JF(CondCarry), 0x40},
+		{"JTP", JT(CondParity), 0x78},
+		{"CAL", CAL(), 0x46},
+		{"CFZ", CF(CondZero), 0x4A},
+		{"CTS", CT(CondSign), 0x72},
+		{"RET", RET(), 0x07},
+		{"RFC", RF(CondCarry), 0x03},
+		{"RTP", RT(CondParity), 0x3B},
+		{"RST 3", RST(3), 0x1D},
+		{"RST masks vector", RST(9), 0x0D},
+	}
+
+	for _, tt := range tests {
+		if tt.got != tt.want {
+			t.Errorf("%s = 0x%02X, want 0x%02X", tt.name, tt.got, tt.want)
+		}
+	}
+}
