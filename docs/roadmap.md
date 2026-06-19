@@ -97,11 +97,25 @@ Contenuto:
 
 ---
 
+## Milestone 6 - Rotate
+
+Stato: completata.
+
+Contenuto:
+
+- `RLC`
+- `RRC`
+- `RAL`
+- `RAR`
+- modifica del solo flag Carry
+- test con Carry iniziale 0 e 1
+
+---
+
 ## Milestone successive
 
 Le istruzioni saranno implementate per famiglie:
 
-- rotate
 - jump, call, return e restart
 - halt e stato stopped
 - input/output

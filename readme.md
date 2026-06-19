@@ -34,6 +34,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - ciclo `Step` con fetch e incremento del PC
 - istruzioni load/move
 - istruzioni ALU e gestione flag
+- istruzioni rotate dell'accumulatore
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -63,6 +64,7 @@ retronet-8008/
 |   |-- memory.go
 |   |-- opcode.go
 |   |-- opcodes.go
+|   |-- rotate.go
 |   |-- step.go
 |   |-- alu_test.go
 |   |-- cpu_test.go
@@ -71,6 +73,7 @@ retronet-8008/
 |   |-- io_test.go
 |   |-- load_test.go
 |   |-- memory_test.go
+|   |-- rotate_test.go
 |   `-- step_test.go
 |-- docs/
 |   |-- architettura.md
@@ -101,8 +104,9 @@ radice ed e' importabile da CLI, esempi e test.
 4. Fetch, decoder e `Step`. Completato.
 5. Load e move. Completato.
 6. ALU e flag. Completato.
-7. Rotate.
-8. Famiglie istruzionali successive, una alla volta, con test e documentazione.
+7. Rotate. Completato.
+8. Control flow.
+9. Famiglie istruzionali successive, una alla volta, con test e documentazione.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -111,5 +115,5 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 # Limiti noti
 
 - La CLI non carica ancora programmi.
-- Load/move e ALU sono implementate; rotate, salti, HLT e I/O istruzionale mancano ancora.
+- Load/move, ALU e rotate sono implementate; salti, HLT e I/O istruzionale mancano ancora.
 - Timing, T-state e interrupt/jam instruction sono rimandati a milestone future.

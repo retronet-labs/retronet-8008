@@ -55,10 +55,10 @@ La funzione interna che aggiorna `Zero`, `Sign` e `Parity` usa il byte risultato
 - Carry azzerato dalle operazioni logiche `ND`, `XR` e `OR`.
 - `CMP`/`CP` aggiorna i flag senza modificare `A`.
 - `INR` e `DCR` aggiornano `Zero`, `Sign` e `Parity` senza modificare Carry.
+- Rotate aggiorna solo Carry e lascia invariati `Zero`, `Sign` e `Parity`.
 
 ---
 
 ## Da implementare
 
 - Salti, call e return condizionali.
-- Rotate, che modificheranno solo Carry.

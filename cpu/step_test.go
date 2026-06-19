@@ -22,7 +22,7 @@ func TestStepRequiresMemory(t *testing.T) {
 func TestStepFetchesOpcodeAndAdvancesPC(t *testing.T) {
 	c := NewCPU8008()
 	mem := NewFlatMemory()
-	mem.Write(0x0000, 0x02) // RLC, 1 byte, non ancora implementato
+	mem.Write(0x0000, 0x00) // HLT, 1 byte, non ancora implementato
 
 	err := c.Step(mem, nil)
 
@@ -37,7 +37,7 @@ func TestStepFetchesOpcodeAndAdvancesPC(t *testing.T) {
 	if !errors.As(err, &opErr) {
 		t.Fatalf("Step error type = %T, want *UnimplementedOpcodeError", err)
 	}
-	if opErr.PC != 0x0000 || opErr.Opcode != 0x02 || opErr.Mnemonic != "RLC" || opErr.Length != 1 {
+	if opErr.PC != 0x0000 || opErr.Opcode != 0x00 || opErr.Mnemonic != "HLT" || opErr.Length != 1 {
 		t.Fatalf("unexpected opcode error: %+v", opErr)
 	}
 }
@@ -63,7 +63,7 @@ func TestStepConsumesOperandsBeforeUnimplementedError(t *testing.T) {
 func TestStepPCWrapsAt14Bits(t *testing.T) {
 	c := NewCPU8008()
 	mem := NewFlatMemory()
-	mem.Write(0x3FFF, 0x02) // RLC, 1 byte, non ancora implementato
+	mem.Write(0x3FFF, 0x00) // HLT, 1 byte, non ancora implementato
 	c.setPC(0x3FFF)
 
 	err := c.Step(mem, nil)

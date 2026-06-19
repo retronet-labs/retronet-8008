@@ -19,6 +19,9 @@ func buildDecoder() [256]Opcode {
 	for i := range table {
 		code := byte(i)
 		execute := ExecuteFunc(unimplementedExecute)
+		if isRotateOpcode(code) {
+			execute = executeRotate
+		}
 		if isALUImmediateOpcode(code) {
 			execute = executeALUImmediate
 		}

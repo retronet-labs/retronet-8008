@@ -55,7 +55,7 @@ non ancora implementati restituiscono `ErrUnimplementedOpcode`.
 - Metadata di lunghezza per istruzioni da 1, 2 e 3 byte.
 - Mnemonici di base per le famiglie note.
 - `Step` con fetch opcode e operandi.
-- Esecuzione reale delle istruzioni load/move e ALU.
+- Esecuzione reale delle istruzioni load/move, ALU e rotate.
 - Wrap del `PC` a 14 bit.
 - Errore tipizzato `UnimplementedOpcodeError`.
 - Test su tabella, lunghezze, mnemonici, fetch e PC.
@@ -64,7 +64,7 @@ non ancora implementati restituiscono `ErrUnimplementedOpcode`.
 
 ## Da implementare
 
-- Funzioni esecutive reali per rotate, control flow, HLT e I/O.
+- Funzioni esecutive reali per control flow, HLT e I/O.
 - Disassembler con contesto memoria.
 - Trace istruzione per istruzione.
 - Metadata temporali piu' accurati.

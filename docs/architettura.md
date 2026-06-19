@@ -22,6 +22,7 @@ Questo documento descrive il modello generale del core CPU:
 - decoder opcode e ciclo `Step`
 - prime istruzioni load/move
 - ALU instruction-level e gestione flag
+- rotate dell'accumulatore
 
 ---
 
@@ -49,6 +50,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `Decode` e `Step` gestiscono fetch e dispatch istruzione
 - `L`, `LI` e `NOP` costruiscono opcode load/move per test ed esempi
 - gli helper ALU costruiscono opcode aritmetici e logici leggibili
+- `RLC`, `RRC`, `RAL` e `RAR` costruiscono opcode rotate leggibili
 
 ---
 
@@ -64,12 +66,13 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `Step` con fetch opcode, fetch operandi e incremento `PC`.
 - Istruzioni load/move tra registri, immediati e `M`.
 - Istruzioni ALU con registri, `M` e immediati.
+- Istruzioni rotate dell'accumulatore.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
-- Famiglie istruzionali restanti: rotate, control flow, HLT e I/O.
+- Famiglie istruzionali restanti: control flow, HLT e I/O.
 - Semantica completa di `HLT`, `STOPPED`, interrupt e jam instruction.
 - Timing e T-state.

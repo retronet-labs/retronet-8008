@@ -119,3 +119,22 @@ func TestALUOpcodeHelpers(t *testing.T) {
 		}
 	}
 }
+
+func TestRotateOpcodeHelpers(t *testing.T) {
+	tests := []struct {
+		name string
+		got  byte
+		want byte
+	}{
+		{"RLC", RLC(), 0x02},
+		{"RRC", RRC(), 0x0A},
+		{"RAL", RAL(), 0x12},
+		{"RAR", RAR(), 0x1A},
+	}
+
+	for _, tt := range tests {
+		if tt.got != tt.want {
+			t.Errorf("%s = 0x%02X, want 0x%02X", tt.name, tt.got, tt.want)
+		}
+	}
+}

@@ -130,9 +130,52 @@ Dopo due `Step`, `A = 0x05`, `Carry = false`, `Zero = false`, `Sign = false`,
 
 ---
 
+## Rotate
+
+Stato: implementato.
+
+Le rotate lavorano solo sull'accumulatore `A` e sul flag `Carry`. Non modificano
+`Zero`, `Sign` o `Parity`.
+
+---
+
+## Operazioni implementate
+
+| Istruzione | Helper | Effetto |
+|------------|--------|---------|
+| RLC | `RLC()` | ruota `A` a sinistra; bit 7 va in bit 0 e in Carry |
+| RRC | `RRC()` | ruota `A` a destra; bit 0 va in bit 7 e in Carry |
+| RAL | `RAL()` | ruota `A` a sinistra attraverso Carry |
+| RAR | `RAR()` | ruota `A` a destra attraverso Carry |
+
+---
+
+## Esempio
+
+```go
+c.A = 0b1000_0000
+c.Carry = true
+mem.Write(0x0000, cpu.RAL())
+```
+
+Dopo `Step`, `A = 0b0000_0001` e `Carry = true`: il vecchio bit 7 esce in
+Carry, mentre il vecchio Carry entra nel bit 0.
+
+---
+
+## Test coperti
+
+- `RLC` e `RRC`
+- `RAL` e `RAR` con Carry iniziale 0 e 1
+- Carry in uscita
+- `Zero`, `Sign` e `Parity` invariati
+- avanzamento del PC
+- helper opcode
+
+---
+
 ## Da implementare
 
-- Rotate.
 - Control flow.
 - HLT/STOPPED.
 - I/O instructions.

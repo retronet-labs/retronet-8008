@@ -129,3 +129,15 @@ func aluRegisterOpcode(group byte, src Register) byte {
 func aluImmediateOpcode(group byte) byte {
 	return 0x04 | ((group & 0x07) << 3)
 }
+
+// RLC ruota A a sinistra: bit 7 va in bit 0 e in Carry.
+func RLC() byte { return 0x02 }
+
+// RRC ruota A a destra: bit 0 va in bit 7 e in Carry.
+func RRC() byte { return 0x0A }
+
+// RAL ruota A a sinistra attraverso Carry.
+func RAL() byte { return 0x12 }
+
+// RAR ruota A a destra attraverso Carry.
+func RAR() byte { return 0x1A }
