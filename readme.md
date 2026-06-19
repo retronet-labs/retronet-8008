@@ -71,6 +71,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - timing Intel con cicli macchina e contatori cumulativi
 - READY/WAIT per ciclo macchina e interrupt sincronizzato
 - trace JSON e debugger con breakpoint/watchpoint
+- conformance sintetica e verifica SHA-256 di ROM locali
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -92,6 +93,11 @@ retronet-8008/
 |   `-- retronet-8008/
 |       |-- main.go
 |       `-- main_test.go
+|-- conformance/
+|   |-- rom.go
+|   |-- suite.go
+|   |-- suite_test.go
+|   `-- synthetic.go
 |-- machine/
 |   |-- debugger.go
 |   |-- debugger_test.go
@@ -143,6 +149,7 @@ retronet-8008/
 |   |-- architettura.md
 |   |-- cli.md
 |   |-- control-lines.md
+|   |-- conformance.md
 |   |-- debugger.md
 |   |-- decoder.md
 |   |-- disassembler.md
@@ -192,7 +199,8 @@ radice ed e' importabile da CLI, esempi e test.
 20. Timing Intel e cicli macchina. Completato.
 21. READY e interrupt al confine PCI. Completato.
 22. Trace strutturato e debugger. Completato.
-23. Conformance sintetica e periferiche generiche.
+23. Conformance sintetica e verifica ROM locale. Completato.
+24. Periferiche generiche configurabili.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 

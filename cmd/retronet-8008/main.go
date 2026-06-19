@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"retronet-8008/conformance"
 	"retronet-8008/cpu"
 	"retronet-8008/machine"
 )
@@ -40,6 +41,10 @@ type runConfig struct {
 	watchMemory   addressFlags
 	breakInput    byteFlags
 	breakOutput   byteFlags
+	conformance   bool
+	verifyROMPath string
+	romSHA256     string
+	romSize       int64
 	roms          romFlags
 	inputs        inputFlags
 }
@@ -169,6 +174,12 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	if cfg.listProfiles {
 		printProfiles(stdout)
 		return 0
+	}
+	if cfg.conformance {
+		return runConformance(stdout)
+	}
+	if cfg.verifyROMPath != "" {
+		return runROMVerification(stdout, stderr, cfg)
 	}
 
 	profile, ok := machine.Lookup(cfg.profileName)
@@ -353,11 +364,18 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	fs.Var(&cfg.watchMemory, "watch", "watchpoint scrittura memoria a 14 bit; ripetibile")
 	fs.Var(&cfg.breakInput, "break-input", "breakpoint porta input; ripetibile")
 	fs.Var(&cfg.breakOutput, "break-output", "breakpoint porta output; ripetibile")
+	fs.BoolVar(&cfg.conformance, "conformance", false, "esegue la suite sintetica integrata e termina")
+	fs.StringVar(&cfg.verifyROMPath, "verify-rom", "", "calcola e verifica una ROM locale senza eseguirla")
+	fs.StringVar(&cfg.romSHA256, "rom-sha256", "", "SHA-256 atteso per -verify-rom")
+	fs.Int64Var(&cfg.romSize, "rom-size", -1, "dimensione attesa per -verify-rom; -1 la ignora")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
 	}
 	if cfg.listProfiles {
+		return cfg, nil
+	}
+	if cfg.conformance || cfg.verifyROMPath != "" {
 		return cfg, nil
 	}
 	if cfg.binPath == "" && len(cfg.roms) == 0 {
@@ -409,6 +427,44 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 		cfg.interruptSet = true
 	}
 	return cfg, nil
+}
+
+func runConformance(stdout io.Writer) int {
+	result := conformance.RunSuite(conformance.SyntheticSuite())
+	for _, test := range result.Cases {
+		status := "PASS"
+		if !test.Passed {
+			status = "FAIL"
+		}
+		fmt.Fprintf(stdout, "%s %s steps=%d stop=%s", status, test.Name, test.Steps, test.StopReason)
+		if test.Error != "" {
+			fmt.Fprintf(stdout, " error=%s", test.Error)
+		}
+		fmt.Fprintln(stdout)
+	}
+	fmt.Fprintf(stdout, "conformance passed=%d failed=%d\n", result.Passed, result.Failed)
+	if result.Failed > 0 {
+		return 1
+	}
+	return 0
+}
+
+func runROMVerification(stdout io.Writer, stderr io.Writer, cfg runConfig) int {
+	result, err := conformance.VerifyLocalROM(cfg.verifyROMPath, conformance.ROMExpectation{
+		Name:           cfg.verifyROMPath,
+		ExpectedSize:   cfg.romSize,
+		ExpectedSHA256: cfg.romSHA256,
+	})
+	if err != nil {
+		fmt.Fprintf(stderr, "errore verifica ROM: %v\n", err)
+		return 1
+	}
+	fmt.Fprintf(stdout, "rom path=%s size=%d sha256=%s matches=%v\n",
+		result.Path, result.ActualSize, result.ActualSHA256, result.Matches)
+	if !result.Matches {
+		return 1
+	}
+	return 0
 }
 
 func parseAddress(value string) (uint16, error) {

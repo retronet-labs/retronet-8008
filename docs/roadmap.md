@@ -353,9 +353,27 @@ Contenuto:
 
 ---
 
+## Milestone 23 - Conformance sintetica
+
+Stato: completata. Non usa ROM o mappe storiche.
+
+Contenuto:
+
+- package importabile `conformance`
+- runner con macchina isolata per ogni caso
+- 11 programmi sintetici per CPU, timing, stack, I/O, interrupt e WAIT
+- esecuzione completa anche in presenza di singoli fallimenti
+- risultati strutturati per caso e suite
+- opzione CLI `-conformance`
+- verifica ROM locale per size e SHA-256 senza esecuzione
+- opzioni `-verify-rom`, `-rom-size` e `-rom-sha256`
+- nessun binario storico distribuito
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare
 - mappe memoria storiche piu' precise per Intellec e SCELBI
 - cassette e altre periferiche virtuali
-- conformance sintetica e periferiche generiche configurabili
+- periferiche generiche configurabili

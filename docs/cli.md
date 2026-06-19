@@ -36,6 +36,9 @@ Opzioni:
 - `-break-opcode`: breakpoint opcode; ripetibile.
 - `-watch`: watchpoint scrittura memoria; ripetibile.
 - `-break-input`, `-break-output`: breakpoint I/O; ripetibili.
+- `-conformance`: esegue gli 11 casi sintetici integrati e termina.
+- `-verify-rom`: calcola/verifica una ROM locale senza eseguirla.
+- `-rom-size`, `-rom-sha256`: vincoli opzionali per `-verify-rom`.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
 - `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
 - `-trace`: stampa ogni istruzione prima dell'esecuzione.
@@ -183,6 +186,10 @@ Il campo `stop_reason` distingue `cpu-stopped`, `requested`, `waiting` e
 Breakpoint e watchpoint attivano `machine.Debugger`. Il run puo' terminare anche
 con `breakpoint`, `watchpoint` o `io-breakpoint`. Il file `-trace-json` contiene
 solo JSON Lines; il dump finale resta su stdout.
+
+`-conformance` e `-verify-rom` sono modalita' autonome e non richiedono un
+binario da eseguire. La verifica ROM restituisce exit code `1` anche per un
+semplice mismatch di size/hash.
 
 ---
 

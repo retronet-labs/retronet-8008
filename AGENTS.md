@@ -12,7 +12,7 @@ dipendere da una macchina storica specifica.
 
 ## Stato
 
-Sono completate le milestone 0-17 e le milestone 20-22:
+Sono completate le milestone 0-17 e le milestone 20-23:
 
 - core CPU, decoder e famiglie istruzionali 8008
 - memoria e I/O separati
@@ -26,6 +26,7 @@ Sono completate le milestone 0-17 e le milestone 20-22:
 - timing Intel con stati, cicli PCI/PCR/PCW/PCC e contatori CPU
 - READY/WAIT per ciclo e interrupt jammed al prossimo confine PCI
 - trace JSON e debugger con breakpoint/watchpoint
+- suite conformance sintetica e verifica ROM locale size/SHA-256
 
 La roadmap dettagliata e' in `docs/roadmap.md`.
 
@@ -61,6 +62,7 @@ package testato, senza una directory `tests/` separata.
 - `RequestInterrupt` non avanza il PC prima della jam instruction.
 - I loader attraverso `ObservableMemory` non devono emettere eventi runtime.
 - Breakpoint PC/opcode fermano prima; watchpoint memoria/I/O fermano dopo.
+- Un hash ROM identifica i byte ma non concede diritti di redistribuzione.
 - Non aggiungere ROM storiche senza provenienza e licenza documentate.
 
 ## Verifica
@@ -85,5 +87,4 @@ Prima di un commit eseguire anche `gofmt` sui file Go modificati e
 
 Ordine consigliato:
 
-1. suite di conformance sintetica
-2. periferiche generiche configurabili
+1. periferiche generiche configurabili

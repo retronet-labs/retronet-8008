@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -459,6 +461,53 @@ func TestRunRejectsInvalidDebuggerPort(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "porta output 8008 non valida") {
 		t.Fatalf("stderr = %s", stderr.String())
+	}
+}
+
+func TestRunConformanceSuite(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-conformance"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "conformance passed=11 failed=0") {
+		t.Fatalf("output = %s", stdout.String())
+	}
+}
+
+func TestRunVerifiesLocalROM(t *testing.T) {
+	data := []byte{0x41, 0x51, 0x00}
+	rom := writeTempProgram(t, data)
+	hash := sha256.Sum256(data)
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"-verify-rom", rom,
+		"-rom-size", "3",
+		"-rom-sha256", hex.EncodeToString(hash[:]),
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "size=3") || !strings.Contains(stdout.String(), "matches=true") {
+		t.Fatalf("output = %s", stdout.String())
+	}
+}
+
+func TestRunReportsLocalROMMismatch(t *testing.T) {
+	rom := writeTempProgram(t, []byte{0x00})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-verify-rom", rom, "-rom-size", "2"}, &stdout, &stderr)
+
+	if code != 1 {
+		t.Fatalf("run exit = %d, want 1", code)
+	}
+	if !strings.Contains(stdout.String(), "matches=false") {
+		t.Fatalf("output = %s", stdout.String())
 	}
 }
 
