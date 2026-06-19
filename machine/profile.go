@@ -10,12 +10,55 @@ import (
 
 const DefaultStepLimit = uint64(1000)
 
+// MemoryKind descrive il ruolo documentale di una regione memoria.
+type MemoryKind string
+
+const (
+	MemoryKindRAM   MemoryKind = "ram"
+	MemoryKindROM   MemoryKind = "rom"
+	MemoryKindMixed MemoryKind = "mixed"
+)
+
+// IODirection descrive la direzione di una porta I/O 8008.
+type IODirection string
+
+const (
+	IODirectionInput  IODirection = "input"
+	IODirectionOutput IODirection = "output"
+)
+
 // ROMSlot descrive una regione caricabile associata a un profilo macchina.
 type ROMSlot struct {
 	Name        string
 	Address     uint16
 	MaxSize     int
 	Required    bool
+	Description string
+}
+
+// MemoryRegion descrive una regione di memoria prevista da un profilo.
+type MemoryRegion struct {
+	Name        string
+	Start       uint16
+	End         uint16
+	Kind        MemoryKind
+	Description string
+}
+
+// IOPort descrive una porta usata o riservata da un profilo macchina.
+type IOPort struct {
+	Port        byte
+	Direction   IODirection
+	Name        string
+	Historical  bool
+	Description string
+}
+
+// ROMHint descrive una ROM locale utile per validare un profilo.
+type ROMHint struct {
+	Name        string
+	Slot        string
+	Included    bool
 	Description string
 }
 
@@ -26,68 +69,129 @@ type ROMSlot struct {
 type Profile struct {
 	Name               string
 	Description        string
+	HistoricalNote     string
 	DefaultLoadAddress uint16
 	DefaultStartPC     uint16
 	DefaultStepLimit   uint64
 	ROMSlots           []ROMSlot
+	MemoryRegions      []MemoryRegion
+	IOPorts            []IOPort
+	ROMHints           []ROMHint
 }
 
 var profiles = []Profile{
 	{
 		Name:               "generic",
 		Description:        "Macchina piatta generica: 16 KB, nessuna ROM predefinita.",
+		HistoricalNote:     "Profilo didattico senza macchina storica associata.",
 		DefaultLoadAddress: 0x0000,
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
+		MemoryRegions:      flatMemoryRegion("direct-memory", "Spazio diretto 8008 usato come memoria piatta per test e binari raw."),
 	},
 	{
 		Name:               "intellec-8",
-		Description:        "Scheletro per sistemi Intel Intellec 8/MOD 8; ROM locali non incluse.",
+		Description:        "Profilo iniziale per sistemi Intel Intellec 8/MCS-8; ROM locali non incluse.",
+		HistoricalNote:     "Intellec era la linea Intel di sistemi di sviluppo per microprocessori; Intellec 8 serviva a sviluppare e provare software/firmware 8008, non a essere un home computer generico.",
 		DefaultLoadAddress: 0x0000,
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
-		ROMSlots: []ROMSlot{
-			{
-				Name:        "monitor",
-				Address:     0x0000,
-				MaxSize:     cpu.AddressSpaceSize,
-				Required:    false,
-				Description: "Monitor/bootstrap locale caricato dall'utente.",
-			},
-		},
+		ROMSlots:           monitorAndTestSlots(),
+		MemoryRegions:      flatMemoryRegion("intellec-direct-memory", "Spazio diretto massimo dell'8008; la ripartizione ROM/RAM storica verra' vincolata dopo verifica di monitor e schemi."),
+		IOPorts:            callbackConsolePorts(),
+		ROMHints:           monitorAndTestHints("Intel monitor o ROM diagnostica locale per Intellec 8."),
 	},
 	{
 		Name:               "scelbi-8h",
-		Description:        "Scheletro per sistemi SCELBI 8H; ROM locali non incluse.",
+		Description:        "Profilo iniziale per sistemi SCELBI 8H; ROM locali non incluse.",
+		HistoricalNote:     "SCELBI 8H era un microcomputer/kit basato su Intel 8008, venduto anche assemblato; il sistema base era front-panel oriented, con periferiche opzionali come terminale o cassette.",
 		DefaultLoadAddress: 0x0000,
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
-		ROMSlots: []ROMSlot{
-			{
-				Name:        "monitor",
-				Address:     0x0000,
-				MaxSize:     cpu.AddressSpaceSize,
-				Required:    false,
-				Description: "Monitor/bootstrap locale caricato dall'utente.",
-			},
-		},
+		ROMSlots:           monitorAndTestSlots(),
+		MemoryRegions:      flatMemoryRegion("scelbi-direct-memory", "Spazio diretto fino a 16 KB; il profilo non forza ancora una scheda RAM/ROM specifica."),
+		IOPorts:            callbackConsolePorts(),
+		ROMHints:           monitorAndTestHints("SCELBI Monitor, Editor, Assembler o SCELBAL convertiti in binario locale."),
 	},
 	{
 		Name:               "scelbi-8b",
-		Description:        "Scheletro per profilo SCELBI 8B compatibile con riferimenti SIMH; ROM locali non incluse.",
+		Description:        "Profilo iniziale SCELBI 8B compatibile con riferimenti SIMH; ROM locali non incluse.",
+		HistoricalNote:     "SCELBI 8B e' il profilo piu' comodo per confronti con simulatori esistenti e software come SCELBAL/Forth, ma qui resta ancora una mappa conservativa.",
 		DefaultLoadAddress: 0x0000,
 		DefaultStartPC:     0x0000,
 		DefaultStepLimit:   DefaultStepLimit,
-		ROMSlots: []ROMSlot{
-			{
-				Name:        "monitor",
-				Address:     0x0000,
-				MaxSize:     cpu.AddressSpaceSize,
-				Required:    false,
-				Description: "Monitor/bootstrap locale caricato dall'utente.",
-			},
-		},
+		ROMSlots:           monitorAndTestSlots(),
+		MemoryRegions:      flatMemoryRegion("scelbi-direct-memory", "Spazio diretto fino a 16 KB; il profilo non forza ancora una scheda RAM/ROM specifica."),
+		IOPorts:            callbackConsolePorts(),
+		ROMHints:           monitorAndTestHints("SCELBI Monitor, SCELBAL o forth-scelbi.bin caricati come file locali."),
 	},
+}
+
+func flatMemoryRegion(name string, description string) []MemoryRegion {
+	return []MemoryRegion{
+		{
+			Name:        name,
+			Start:       0x0000,
+			End:         cpu.AddressMask,
+			Kind:        MemoryKindMixed,
+			Description: description,
+		},
+	}
+}
+
+func monitorAndTestSlots() []ROMSlot {
+	return []ROMSlot{
+		{
+			Name:        "monitor",
+			Address:     0x0000,
+			MaxSize:     cpu.AddressSpaceSize,
+			Required:    false,
+			Description: "Monitor/bootstrap locale caricato dall'utente.",
+		},
+		{
+			Name:        "test",
+			Address:     0x0000,
+			MaxSize:     cpu.AddressSpaceSize,
+			Required:    false,
+			Description: "ROM locale di smoke test caricata a 0x0000.",
+		},
+	}
+}
+
+func callbackConsolePorts() []IOPort {
+	return []IOPort{
+		{
+			Port:        0,
+			Direction:   IODirectionInput,
+			Name:        "callback-input-0",
+			Historical:  false,
+			Description: "Porta input convenzionale per test, terminale o front panel emulato via callback.",
+		},
+		{
+			Port:        8,
+			Direction:   IODirectionOutput,
+			Name:        "callback-output-8",
+			Historical:  false,
+			Description: "Porta output convenzionale per test, terminale o front panel emulato via callback.",
+		},
+	}
+}
+
+func monitorAndTestHints(monitorDescription string) []ROMHint {
+	return []ROMHint{
+		{
+			Name:        "monitor",
+			Slot:        "monitor",
+			Included:    false,
+			Description: monitorDescription,
+		},
+		{
+			Name:        "io-smoke",
+			Slot:        "test",
+			Included:    false,
+			Description: "ROM locale minima: INP 0, OUT 8, HLT; valida loader e callback I/O senza dipendere da ROM storiche.",
+		},
+	}
 }
 
 // Profiles restituisce una copia ordinata dei profili disponibili.
@@ -114,6 +218,9 @@ func Lookup(name string) (Profile, bool) {
 
 func cloneProfile(p Profile) Profile {
 	p.ROMSlots = append([]ROMSlot(nil), p.ROMSlots...)
+	p.MemoryRegions = append([]MemoryRegion(nil), p.MemoryRegions...)
+	p.IOPorts = append([]IOPort(nil), p.IOPorts...)
+	p.ROMHints = append([]ROMHint(nil), p.ROMHints...)
 	return p
 }
 

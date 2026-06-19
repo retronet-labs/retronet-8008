@@ -226,8 +226,26 @@ Contenuto:
 
 ---
 
+## Milestone 14 - SCELBI/Intellec e I/O callback
+
+Stato: completata.
+
+Contenuto:
+
+- spiegazione storica di SCELBI 8H/8B e Intel Intellec 8
+- metadata `MemoryRegion`, `IOPort` e `ROMHint`
+- slot ROM locale `test` separato dallo slot `monitor`
+- bus `machine.CallbackIO` con latch e callback per porta
+- opzioni CLI `-input porta=valore` e `-io-trace`
+- ROM locale di smoke test `INP 0`, `OUT 8`, `HLT`
+- porte callback `0` e `8` dichiarate come convenzioni non storiche
+- test su callback, copie dei profili e integrazione ROM/I/O
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare
 - mappe memoria storiche piu' precise per Intellec e SCELBI
+- terminale, front panel, cassette e altre periferiche virtuali
 - timing e T-state

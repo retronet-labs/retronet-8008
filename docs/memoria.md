@@ -46,13 +46,15 @@ Il package `cpu` espone:
 - Mascheramento degli indirizzi a 14 bit.
 - Accesso al pseudo-registro `M` per load/move tramite `HL`.
 - Uso di `M` come operando sorgente per la famiglia ALU.
+- Caricamento di binari raw dalla CLI.
+- Caricamento di ROM locali tramite slot di profilo.
+- Metadata `MemoryRegion` per descrivere le mappe macchina.
 - Test su zero init, lettura, scrittura e wrap degli indirizzi.
 
 ---
 
 ## Da implementare
 
-- Distinzione opzionale ROM/RAM per profili macchina.
-- Esecuzione reale delle famiglie istruzionali restanti.
-- Accesso al pseudo-registro `M` dalle famiglie istruzionali che ancora mancano.
-- Caricamento binari dalla CLI.
+- Bus memoria che faccia rispettare regioni ROM in sola lettura.
+- Mappe ROM/RAM storiche verificate per SCELBI e Intellec.
+- Eventuale bank switching a livello macchina.

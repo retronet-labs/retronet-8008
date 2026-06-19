@@ -177,6 +177,9 @@ func TestRunListsProfiles(t *testing.T) {
 		"scelbi-8b:",
 		"scelbi-8h:",
 		"rom monitor @0x0000",
+		"rom test @0x0000",
+		"io input 0 callback-input-0",
+		"io output 8 callback-output-8",
 	}
 	for _, part := range wantParts {
 		if !strings.Contains(out, part) {
@@ -210,6 +213,39 @@ func TestRunLoadsProfileROM(t *testing.T) {
 	}
 }
 
+func TestRunLoadsLocalTestROMWithIOTrace(t *testing.T) {
+	rom := writeTempProgram(t, []byte{
+		cpu.INP(0),
+		cpu.OUT(8),
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"-profile", "scelbi-8b",
+		"-rom", "test=" + rom,
+		"-input", "0=0x5A",
+		"-io-trace",
+		"-steps", "8",
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	wantParts := []string{
+		"io in port=0 value=0x5A\n",
+		"io out port=8 value=0x5A\n",
+		"profile=scelbi-8b loaded=0 roms=1 addr=0x0000 pc_start=0x0000 steps=3 limit_reached=false",
+		"A=0x5A",
+	}
+	for _, part := range wantParts {
+		if !strings.Contains(out, part) {
+			t.Fatalf("output missing %q:\n%s", part, out)
+		}
+	}
+}
+
 func TestRunRejectsUnknownProfile(t *testing.T) {
 	bin := writeTempProgram(t, []byte{cpu.HLT()})
 	var stdout, stderr bytes.Buffer
@@ -235,6 +271,20 @@ func TestRunRejectsUnknownROMSlot(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "slot ROM") {
 		t.Fatalf("stderr = %s, want slot ROM error", stderr.String())
+	}
+}
+
+func TestRunRejectsInvalidInputPort(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.HLT()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-input", "8=0x01"}, &stdout, &stderr)
+
+	if code != 2 {
+		t.Fatalf("run exit = %d, want 2", code)
+	}
+	if !strings.Contains(stderr.String(), "porta input 8008 non valida") {
+		t.Fatalf("stderr = %s, want invalid input port error", stderr.String())
 	}
 }
 

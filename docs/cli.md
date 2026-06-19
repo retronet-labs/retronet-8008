@@ -21,6 +21,8 @@ Opzioni:
 - `-profile`: profilo macchina da usare. Default `generic`.
 - `-profiles`: elenca i profili macchina disponibili e termina.
 - `-rom`: carica una ROM di profilo nel formato `nome=percorso`. Ripetibile.
+- `-input`: inizializza una porta input nel formato `porta=valore`. Ripetibile.
+- `-io-trace`: stampa letture e scritture I/O effettuate tramite callback.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
 - `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
 - `-trace`: stampa ogni istruzione prima dell'esecuzione.
@@ -112,9 +114,32 @@ si sovrappongono, il caricamento successivo sovrascrive i byte precedenti.
 
 ---
 
+## I/O callback e ROM di test
+
+Questa ROM legge input `0`, lo copia su output `8` e si ferma:
+
+```powershell
+[IO.File]::WriteAllBytes("$env:TEMP\io-smoke.bin", [byte[]](0x41, 0x51, 0x00))
+go run ./cmd/retronet-8008 -profile scelbi-8b -rom "test=$env:TEMP\io-smoke.bin" -input 0=0x5A -io-trace -steps 8
+```
+
+Output rilevante:
+
+```text
+io in port=0 value=0x5A
+io out port=8 value=0x5A
+profile=scelbi-8b loaded=0 roms=1 addr=0x0000 pc_start=0x0000 steps=3 limit_reached=false
+```
+
+`-input` usa solo le porte `0..7`. Il trace output usa le porte `8..31`, come
+richiesto dall'I/O asimmetrico dell'8008.
+
+---
+
 ## Limiti
 
 - Il formato supportato e' binario raw; non ci sono ancora container ROM.
-- Le porte I/O usano `Ports`, l'implementazione semplice interna.
+- Le porte I/O usano `machine.CallbackIO`; non ci sono ancora periferiche
+  complete.
 - Il repository non include ROM storiche: i file devono essere forniti
   localmente dall'utente.

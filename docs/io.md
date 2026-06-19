@@ -39,6 +39,18 @@ Il package `cpu` espone:
 output `8..31`. Il decoder conserva questa asimmetria invece di trattare lo
 spazio come 32 porte bidirezionali.
 
+Il package `machine` espone inoltre `CallbackIO`, una implementazione di `cpu.IO`
+con latch e callback opzionali per ogni porta:
+
+- `SetInput(port, value)` inizializza un input.
+- `OnInput(port, callback)` calcola o osserva il valore letto.
+- `OnOutput(port, callback)` osserva o inoltra il valore scritto.
+- `OutputValue(port)` legge l'ultimo valore latched in uscita.
+- `Profile.NewIO()` crea il bus associato al profilo macchina.
+
+Le callback permettono di collegare terminali, front panel, cassette o semplici
+trace senza introdurre dipendenze di macchina nel core CPU.
+
 ---
 
 ## Implementato ora
@@ -53,11 +65,15 @@ spazio come 32 porte bidirezionali.
 - Errore `ErrNilIO` per istruzioni I/O senza bus.
 - Test sui limiti validi e invalidi.
 - Test sul mapping completo delle 8 porte input e 24 porte output.
+- Bus `machine.CallbackIO`.
+- Callback input/output validate per porta.
+- Opzioni CLI `-input porta=valore` e `-io-trace`.
+- Test di integrazione con ROM locale `INP 0`, `OUT 8`, `HLT`.
 
 ---
 
 ## Da implementare
 
-- Callback o periferiche virtuali.
-- Trace I/O.
-- Interazione con una futura CLI runner.
+- Periferiche virtuali complete: terminale, front panel, cassette.
+- Mappe I/O storiche verificate per SCELBI e Intellec.
+- Eventuale trace strutturato oltre all'output testuale CLI.

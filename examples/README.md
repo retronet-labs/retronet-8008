@@ -42,5 +42,15 @@ Per caricare una ROM locale in uno slot di profilo:
 go run ./cmd/retronet-8008 -profile intellec-8 -rom monitor=monitor.bin -steps 1000
 ```
 
+Una ROM I/O minima puo' essere creata ed eseguita cosi':
+
+```powershell
+[IO.File]::WriteAllBytes("$env:TEMP\io-smoke.bin", [byte[]](0x41, 0x51, 0x00))
+go run ./cmd/retronet-8008 -profile scelbi-8b -rom "test=$env:TEMP\io-smoke.bin" -input 0=0x5A -io-trace -steps 8
+```
+
+I byte rappresentano `INP 0`, `OUT 8`, `HLT`. Il valore `0x5A` attraversa il
+bus callback dalla porta input 0 alla porta output 8.
+
 Esempi Go veri e propri arriveranno con assembler e programmi dimostrativi
 versionati.

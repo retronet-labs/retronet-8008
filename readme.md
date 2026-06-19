@@ -30,6 +30,9 @@ go run ./cmd/retronet-8008 -profiles
 
 # carica una ROM locale nello slot monitor del profilo Intellec
 go run ./cmd/retronet-8008 -profile intellec-8 -rom monitor=monitor.bin -steps 1000
+
+# esegue una ROM locale con input e trace I/O a callback
+go run ./cmd/retronet-8008 -profile scelbi-8b -rom test=io-smoke.bin -input 0=0x5A -io-trace -steps 8
 ```
 
 ---
@@ -54,6 +57,8 @@ Il progetto ha completato le prime milestone fondamentali:
 - disassembler minimale con contesto memoria
 - trace istruzione per istruzione nella CLI
 - profili macchina base e caricamento ROM locali
+- profili SCELBI/Intellec documentati con metadata memoria e I/O
+- bus I/O a callback con input configurabile e trace CLI
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -75,6 +80,8 @@ retronet-8008/
 |       |-- main.go
 |       `-- main_test.go
 |-- machine/
+|   |-- io.go
+|   |-- io_test.go
 |   |-- profile.go
 |   `-- profile_test.go
 |-- cpu/
@@ -149,7 +156,8 @@ radice ed e' importabile da CLI, esempi e test.
 12. Disassembler minimale. Completato.
 13. Trace istruzione per istruzione. Completato.
 14. Profili macchina e caricamento ROM locali. Completato.
-15. ROM storiche reali, mappe memoria piu' precise, timing e T-state.
+15. Profili SCELBI/Intellec concreti e I/O callback. Completato.
+16. ROM storiche reali, periferiche, mappe memoria precise, timing e T-state.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -161,4 +169,6 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
   strutturati.
 - Le famiglie istruzionali principali sono implementate a livello funzionale.
 - Il repository non include ROM storiche.
+- Le porte callback `0` e `8` sono convenzioni di test, non mappe storiche
+  definitive.
 - Timing, T-state e dettagli elettrici dell'interrupt reale sono rimandati a milestone future.

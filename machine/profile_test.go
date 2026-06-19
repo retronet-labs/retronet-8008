@@ -26,6 +26,9 @@ func TestProfilesReturnsCopies(t *testing.T) {
 		t.Fatal("Lookup(intellec-8) = false")
 	}
 	profile.ROMSlots[0].Name = "mutated"
+	profile.MemoryRegions[0].Name = "mutated"
+	profile.IOPorts[0].Name = "mutated"
+	profile.ROMHints[0].Name = "mutated"
 
 	again, ok := Lookup("intellec-8")
 	if !ok {
@@ -33,6 +36,15 @@ func TestProfilesReturnsCopies(t *testing.T) {
 	}
 	if again.ROMSlots[0].Name != "monitor" {
 		t.Fatalf("ROMSlots[0].Name = %q, want monitor", again.ROMSlots[0].Name)
+	}
+	if again.MemoryRegions[0].Name != "intellec-direct-memory" {
+		t.Fatalf("MemoryRegions[0].Name = %q, want intellec-direct-memory", again.MemoryRegions[0].Name)
+	}
+	if again.IOPorts[0].Name != "callback-input-0" {
+		t.Fatalf("IOPorts[0].Name = %q, want callback-input-0", again.IOPorts[0].Name)
+	}
+	if again.ROMHints[0].Name != "monitor" {
+		t.Fatalf("ROMHints[0].Name = %q, want monitor", again.ROMHints[0].Name)
 	}
 }
 
@@ -76,6 +88,21 @@ func TestProfileLoadROM(t *testing.T) {
 	}
 	if got := mem.Read(0x0000); got != 0x06 {
 		t.Fatalf("mem[0x0000] = 0x%02X, want 0x06", got)
+	}
+}
+
+func TestProfileLoadTestROM(t *testing.T) {
+	profile, ok := Lookup("scelbi-8b")
+	if !ok {
+		t.Fatal("Lookup(scelbi-8b) = false")
+	}
+	mem := cpu.NewFlatMemory()
+
+	if err := profile.LoadROM(mem, "test", []byte{cpu.INP(0), cpu.OUT(8), cpu.HLT()}); err != nil {
+		t.Fatalf("LoadROM(test) = %v, want nil", err)
+	}
+	if got := mem.Read(0x0001); got != cpu.OUT(8) {
+		t.Fatalf("mem[0x0001] = 0x%02X, want OUT 8", got)
 	}
 }
 
