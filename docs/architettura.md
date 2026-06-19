@@ -19,6 +19,7 @@ Questo documento descrive il modello generale del core CPU:
 - stati `Halted` e `Stopped`
 - memoria diretta da 16 KB
 - bus I/O separato
+- decoder opcode e ciclo `Step`
 
 ---
 
@@ -43,6 +44,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `stackIndex` maschera lo stack pointer a 3 bit
 - `FlatMemory` modella lo spazio diretto da 16 KB
 - `Ports` modella le porte input/output separate
+- `Decode` e `Step` gestiscono fetch e dispatch istruzione
 
 ---
 
@@ -54,13 +56,14 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Helper per indirizzi a 14 bit, HL e stack pointer.
 - Memoria piatta da 16 KB.
 - I/O separato con 8 porte input e 24 porte output.
+- Decoder tabellare da 256 opcode.
+- `Step` con fetch opcode, fetch operandi e incremento `PC`.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
-- Fetch, decoder e `Step`.
 - Istruzioni 8008.
 - Semantica completa di `HLT`, `STOPPED`, interrupt e jam instruction.
 - Timing e T-state.

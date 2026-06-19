@@ -53,6 +53,8 @@ Contenuto:
 
 ## Milestone 3 - Fetch, decoder e Step
 
+Stato: completata.
+
 Contenuto:
 
 - fetch opcode da `PC`
@@ -60,6 +62,7 @@ Contenuto:
 - tabella decoder da 256 opcode
 - errore esplicito per opcode non implementati
 - `Step()`
+- test su decoder, fetch, PC e opcode non implementati
 
 ---
 

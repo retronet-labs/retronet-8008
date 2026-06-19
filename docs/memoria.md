@@ -51,6 +51,6 @@ Il package `cpu` espone:
 ## Da implementare
 
 - Distinzione opzionale ROM/RAM per profili macchina.
-- Fetch istruzioni da memoria.
+- Esecuzione reale delle istruzioni fetchate.
 - Accesso al pseudo-registro `M`.
 - Caricamento binari dalla CLI.

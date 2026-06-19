@@ -24,17 +24,20 @@ go run ./cmd/retronet-8008
 
 # Stato attuale
 
-Il progetto ha completato le prime tre basi:
+Il progetto ha completato le prime quattro basi:
 
 - struttura Go iniziale
 - package `cpu` con stato base dell'Intel 8008
 - memoria piatta da 16 KB
 - I/O separato con 8 porte input e 24 porte output
+- decoder tabellare da 256 opcode
+- ciclo `Step` con fetch e incremento del PC
 - documentazione italiana iniziale
 
-Non esistono ancora decoder o istruzioni eseguibili. Sono gia' modellati
+Non esistono ancora istruzioni eseguibili: `Step` consuma opcode e operandi, poi
+restituisce un errore esplicito di opcode non implementato. Sono gia' modellati
 registri, flag, program counter a 14 bit, stack interno, reset storico in stato
-fermo, memoria diretta e porte I/O.
+fermo, memoria diretta, porte I/O e metadata del decoder.
 
 ---
 
@@ -49,17 +52,23 @@ retronet-8008/
 |       `-- main.go
 |-- cpu/
 |   |-- cpu.go
+|   |-- decoder.go
 |   |-- errors.go
 |   |-- helpers.go
 |   |-- io.go
 |   |-- memory.go
+|   |-- opcode.go
 |   |-- opcodes.go
+|   |-- step.go
 |   |-- cpu_test.go
+|   |-- decoder_test.go
 |   |-- helpers_test.go
 |   |-- io_test.go
-|   `-- memory_test.go
+|   |-- memory_test.go
+|   `-- step_test.go
 |-- docs/
 |   |-- architettura.md
+|   |-- decoder.md
 |   |-- flags.md
 |   |-- io.md
 |   |-- memoria.md
@@ -82,8 +91,9 @@ radice ed e' importabile da CLI, esempi e test.
 1. Bootstrap del progetto. Completato.
 2. Stato CPU base. Completato.
 3. Memoria diretta a 16 KB e I/O separato. Completato.
-4. Fetch, decoder e `Step`.
-5. Famiglie istruzionali, una alla volta, con test e documentazione.
+4. Fetch, decoder e `Step`. Completato.
+5. Load e move.
+6. Famiglie istruzionali successive, una alla volta, con test e documentazione.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -92,5 +102,5 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 # Limiti noti
 
 - La CLI non carica ancora programmi.
-- Non esistono ancora decoder o istruzioni.
+- Non esistono ancora istruzioni implementate.
 - Timing, T-state e interrupt/jam instruction sono rimandati a milestone future.
