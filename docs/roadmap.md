@@ -81,11 +81,26 @@ Contenuto:
 
 ---
 
+## Milestone 5 - ALU e flags
+
+Stato: completata.
+
+Contenuto:
+
+- ADD, ADC, SUB, SBB
+- AND, XOR, OR, CMP
+- operandi registro, `M` e immediati
+- `INR` e `DCR`
+- aggiornamento `Carry`, `Zero`, `Sign` e `Parity`
+- `CMP` senza modifica di `A`
+- test su edge case di carry, borrow, zero, sign e parity
+
+---
+
 ## Milestone successive
 
 Le istruzioni saranno implementate per famiglie:
 
-- ALU e flag
 - rotate
 - jump, call, return e restart
 - halt e stato stopped

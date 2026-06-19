@@ -86,3 +86,36 @@ func TestLoadOpcodeHelpers(t *testing.T) {
 		t.Fatalf("NOP() = 0x%02X, want 0xC0", got)
 	}
 }
+
+func TestALUOpcodeHelpers(t *testing.T) {
+	tests := []struct {
+		name string
+		got  byte
+		want byte
+	}{
+		{"AD B", AD(RegB), 0x81},
+		{"AC M", AC(RegM), 0x8F},
+		{"SU C", SU(RegC), 0x92},
+		{"SB D", SB(RegD), 0x9B},
+		{"ND E", ND(RegE), 0xA4},
+		{"XR H", XR(RegH), 0xAD},
+		{"OR L", OR(RegL), 0xB6},
+		{"CP A", CP(RegA), 0xB8},
+		{"ADI", ADI(), 0x04},
+		{"ACI", ACI(), 0x0C},
+		{"SUI", SUI(), 0x14},
+		{"SBI", SBI(), 0x1C},
+		{"NDI", NDI(), 0x24},
+		{"XRI", XRI(), 0x2C},
+		{"ORI", ORI(), 0x34},
+		{"CPI", CPI(), 0x3C},
+		{"INR B", INR(RegB), 0x08},
+		{"DCR L", DCR(RegL), 0x31},
+	}
+
+	for _, tt := range tests {
+		if tt.got != tt.want {
+			t.Errorf("%s = 0x%02X, want 0x%02X", tt.name, tt.got, tt.want)
+		}
+	}
+}

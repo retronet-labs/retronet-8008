@@ -33,12 +33,13 @@ Il progetto ha completato le prime milestone fondamentali:
 - decoder tabellare da 256 opcode
 - ciclo `Step` con fetch e incremento del PC
 - istruzioni load/move
+- istruzioni ALU e gestione flag
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
 reset storico in stato fermo, memoria diretta, porte I/O, metadata del decoder e
-i primi opcode eseguibili. Gli opcode non ancora implementati restituiscono un
-errore esplicito.
+le prime famiglie istruzionali eseguibili. Gli opcode non ancora implementati
+restituiscono un errore esplicito.
 
 ---
 
@@ -52,6 +53,7 @@ retronet-8008/
 |   `-- retronet-8008/
 |       `-- main.go
 |-- cpu/
+|   |-- alu.go
 |   |-- cpu.go
 |   |-- decoder.go
 |   |-- errors.go
@@ -62,6 +64,7 @@ retronet-8008/
 |   |-- opcode.go
 |   |-- opcodes.go
 |   |-- step.go
+|   |-- alu_test.go
 |   |-- cpu_test.go
 |   |-- decoder_test.go
 |   |-- helpers_test.go
@@ -97,8 +100,9 @@ radice ed e' importabile da CLI, esempi e test.
 3. Memoria diretta a 16 KB e I/O separato. Completato.
 4. Fetch, decoder e `Step`. Completato.
 5. Load e move. Completato.
-6. ALU e flag.
-7. Famiglie istruzionali successive, una alla volta, con test e documentazione.
+6. ALU e flag. Completato.
+7. Rotate.
+8. Famiglie istruzionali successive, una alla volta, con test e documentazione.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -107,5 +111,5 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 # Limiti noti
 
 - La CLI non carica ancora programmi.
-- Solo load/move sono implementate; ALU, salti, HLT e I/O istruzionale mancano ancora.
+- Load/move e ALU sono implementate; rotate, salti, HLT e I/O istruzionale mancano ancora.
 - Timing, T-state e interrupt/jam instruction sono rimandati a milestone future.

@@ -19,6 +19,18 @@ func buildDecoder() [256]Opcode {
 	for i := range table {
 		code := byte(i)
 		execute := ExecuteFunc(unimplementedExecute)
+		if isALUImmediateOpcode(code) {
+			execute = executeALUImmediate
+		}
+		if isALURegisterOpcode(code) {
+			execute = executeALURegister
+		}
+		if isIncrementOpcode(code) {
+			execute = executeIncrement
+		}
+		if isDecrementOpcode(code) {
+			execute = executeDecrement
+		}
 		if isLoadImmediateOpcode(code) {
 			execute = executeLoadImmediate
 		}

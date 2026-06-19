@@ -45,6 +45,7 @@ Il package `cpu` espone:
 - Memoria piatta da 16 KB.
 - Mascheramento degli indirizzi a 14 bit.
 - Accesso al pseudo-registro `M` per load/move tramite `HL`.
+- Uso di `M` come operando sorgente per la famiglia ALU.
 - Test su zero init, lettura, scrittura e wrap degli indirizzi.
 
 ---
@@ -53,5 +54,5 @@ Il package `cpu` espone:
 
 - Distinzione opzionale ROM/RAM per profili macchina.
 - Esecuzione reale delle famiglie istruzionali restanti.
-- Accesso al pseudo-registro `M` dalle altre famiglie istruzionali.
+- Accesso al pseudo-registro `M` dalle famiglie istruzionali che ancora mancano.
 - Caricamento binari dalla CLI.

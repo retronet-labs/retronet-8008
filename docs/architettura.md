@@ -21,6 +21,7 @@ Questo documento descrive il modello generale del core CPU:
 - bus I/O separato
 - decoder opcode e ciclo `Step`
 - prime istruzioni load/move
+- ALU instruction-level e gestione flag
 
 ---
 
@@ -47,6 +48,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `Ports` modella le porte input/output separate
 - `Decode` e `Step` gestiscono fetch e dispatch istruzione
 - `L`, `LI` e `NOP` costruiscono opcode load/move per test ed esempi
+- gli helper ALU costruiscono opcode aritmetici e logici leggibili
 
 ---
 
@@ -61,12 +63,13 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Decoder tabellare da 256 opcode.
 - `Step` con fetch opcode, fetch operandi e incremento `PC`.
 - Istruzioni load/move tra registri, immediati e `M`.
+- Istruzioni ALU con registri, `M` e immediati.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
-- Famiglie istruzionali restanti.
+- Famiglie istruzionali restanti: rotate, control flow, HLT e I/O.
 - Semantica completa di `HLT`, `STOPPED`, interrupt e jam instruction.
 - Timing e T-state.

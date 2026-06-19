@@ -39,6 +39,9 @@ Le istruzioni condizionali selezionano un flag con due bit:
 costanti `CondCarry`, `CondZero`, `CondSign` e `CondParity` fissano i codici
 condizione per decoder e helper futuri.
 
+La funzione interna che aggiorna `Zero`, `Sign` e `Parity` usa il byte risultato.
+`Parity` vale true quando il numero di bit a 1 e' pari.
+
 ---
 
 ## Implementato ora
@@ -46,12 +49,16 @@ condizione per decoder e helper futuri.
 - Campi flag nello stato CPU.
 - Reset dei flag a `false`.
 - Costanti condizione.
+- Aggiornamento flag nelle istruzioni ALU.
+- Carry su addizione come riporto oltre 8 bit.
+- Carry su sottrazione e compare come borrow.
+- Carry azzerato dalle operazioni logiche `ND`, `XR` e `OR`.
+- `CMP`/`CP` aggiorna i flag senza modificare `A`.
+- `INR` e `DCR` aggiornano `Zero`, `Sign` e `Parity` senza modificare Carry.
 
 ---
 
 ## Da implementare
 
-- Aggiornamento flag nelle istruzioni ALU.
-- Parity helper per calcolare la parita' pari.
-- Semantica di Carry per sottrazioni e confronti.
 - Salti, call e return condizionali.
+- Rotate, che modificheranno solo Carry.

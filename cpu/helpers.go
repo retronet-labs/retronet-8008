@@ -57,3 +57,75 @@ func L(dst, src Register) byte {
 func LI(dst Register) byte {
 	return 0x06 | (regBits(dst) << 3)
 }
+
+// INR costruisce l'opcode di incremento registro.
+//
+// L'8008 definisce questa famiglia per B, C, D, E, H e L. L'incremento aggiorna
+// Zero, Sign e Parity, ma non modifica Carry.
+func INR(r Register) byte {
+	return regBits(r) << 3
+}
+
+// DCR costruisce l'opcode di decremento registro.
+//
+// L'8008 definisce questa famiglia per B, C, D, E, H e L. Il decremento aggiorna
+// Zero, Sign e Parity, ma non modifica Carry.
+func DCR(r Register) byte {
+	return 0x01 | (regBits(r) << 3)
+}
+
+// AD somma all'accumulatore il registro o M indicato.
+func AD(src Register) byte { return aluRegisterOpcode(0, src) }
+
+// AC somma all'accumulatore il registro o M indicato, includendo Carry.
+func AC(src Register) byte { return aluRegisterOpcode(1, src) }
+
+// SU sottrae dall'accumulatore il registro o M indicato.
+func SU(src Register) byte { return aluRegisterOpcode(2, src) }
+
+// SB sottrae dall'accumulatore il registro o M indicato, includendo il borrow in Carry.
+func SB(src Register) byte { return aluRegisterOpcode(3, src) }
+
+// ND applica AND tra accumulatore e registro o M indicato.
+func ND(src Register) byte { return aluRegisterOpcode(4, src) }
+
+// XR applica XOR tra accumulatore e registro o M indicato.
+func XR(src Register) byte { return aluRegisterOpcode(5, src) }
+
+// OR applica OR tra accumulatore e registro o M indicato.
+func OR(src Register) byte { return aluRegisterOpcode(6, src) }
+
+// CP confronta accumulatore e registro o M indicato senza modificare A.
+func CP(src Register) byte { return aluRegisterOpcode(7, src) }
+
+// ADI costruisce il primo byte di add immediato.
+func ADI() byte { return aluImmediateOpcode(0) }
+
+// ACI costruisce il primo byte di add immediato con Carry.
+func ACI() byte { return aluImmediateOpcode(1) }
+
+// SUI costruisce il primo byte di subtract immediato.
+func SUI() byte { return aluImmediateOpcode(2) }
+
+// SBI costruisce il primo byte di subtract immediato con borrow.
+func SBI() byte { return aluImmediateOpcode(3) }
+
+// NDI costruisce il primo byte di AND immediato.
+func NDI() byte { return aluImmediateOpcode(4) }
+
+// XRI costruisce il primo byte di XOR immediato.
+func XRI() byte { return aluImmediateOpcode(5) }
+
+// ORI costruisce il primo byte di OR immediato.
+func ORI() byte { return aluImmediateOpcode(6) }
+
+// CPI costruisce il primo byte di compare immediato.
+func CPI() byte { return aluImmediateOpcode(7) }
+
+func aluRegisterOpcode(group byte, src Register) byte {
+	return 0x80 | ((group & 0x07) << 3) | regBits(src)
+}
+
+func aluImmediateOpcode(group byte) byte {
+	return 0x04 | ((group & 0x07) << 3)
+}
