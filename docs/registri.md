@@ -48,11 +48,13 @@ e dai futuri helper opcode.
 - Registri fisici a 8 bit.
 - Costanti registro.
 - Calcolo `HL()` con mascheramento di `H & 0x3F`.
+- Load e move tra registri.
+- Load immediati.
+- Lettura e scrittura del pseudo-registro `M`.
 
 ---
 
 ## Da implementare
 
-- Lettura e scrittura del pseudo-registro `M`.
-- Istruzioni load/move tra registri.
-- Helper opcode per costruire istruzioni leggibili nei test.
+- ALU e flag sui registri.
+- Istruzioni di controllo di flusso che usano registri e condizioni.

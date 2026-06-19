@@ -1,9 +1,9 @@
 # Decoder e Step
 
-Il decoder trasforma un byte opcode in metadata eseguibili dal core. In questa
-milestone la tabella e il ciclo fetch-decode-execute esistono, ma le istruzioni
-non hanno ancora semantica: ogni opcode termina con un errore esplicito di
-istruzione non implementata.
+Il decoder trasforma un byte opcode in metadata eseguibili dal core. La tabella
+e il ciclo fetch-decode-execute sono completi; le famiglie gia' implementate
+agganciano una funzione esecutiva reale, mentre gli altri opcode terminano con
+un errore esplicito di istruzione non implementata.
 
 ---
 
@@ -44,9 +44,8 @@ Il package `cpu` espone:
 - `Step(mem Memory, io IO) error`
 
 `Step` legge l'opcode da `PC`, incrementa `PC`, legge gli eventuali operandi
-secondo `Opcode.Length`, poi chiama la funzione esecutiva associata. Finche'
-le famiglie istruzionali non vengono implementate, la funzione esecutiva
-restituisce `ErrUnimplementedOpcode`.
+secondo `Opcode.Length`, poi chiama la funzione esecutiva associata. Gli opcode
+non ancora implementati restituiscono `ErrUnimplementedOpcode`.
 
 ---
 
@@ -56,6 +55,7 @@ restituisce `ErrUnimplementedOpcode`.
 - Metadata di lunghezza per istruzioni da 1, 2 e 3 byte.
 - Mnemonici di base per le famiglie note.
 - `Step` con fetch opcode e operandi.
+- Esecuzione reale delle istruzioni load/move.
 - Wrap del `PC` a 14 bit.
 - Errore tipizzato `UnimplementedOpcodeError`.
 - Test su tabella, lunghezze, mnemonici, fetch e PC.
@@ -64,7 +64,7 @@ restituisce `ErrUnimplementedOpcode`.
 
 ## Da implementare
 
-- Funzioni esecutive reali per ogni famiglia istruzionale.
+- Funzioni esecutive reali per le famiglie istruzionali restanti.
 - Disassembler con contesto memoria.
 - Trace istruzione per istruzione.
 - Metadata temporali piu' accurati.

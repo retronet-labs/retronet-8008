@@ -24,7 +24,7 @@ go run ./cmd/retronet-8008
 
 # Stato attuale
 
-Il progetto ha completato le prime quattro basi:
+Il progetto ha completato le prime milestone fondamentali:
 
 - struttura Go iniziale
 - package `cpu` con stato base dell'Intel 8008
@@ -32,12 +32,13 @@ Il progetto ha completato le prime quattro basi:
 - I/O separato con 8 porte input e 24 porte output
 - decoder tabellare da 256 opcode
 - ciclo `Step` con fetch e incremento del PC
+- istruzioni load/move
 - documentazione italiana iniziale
 
-Non esistono ancora istruzioni eseguibili: `Step` consuma opcode e operandi, poi
-restituisce un errore esplicito di opcode non implementato. Sono gia' modellati
-registri, flag, program counter a 14 bit, stack interno, reset storico in stato
-fermo, memoria diretta, porte I/O e metadata del decoder.
+Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
+reset storico in stato fermo, memoria diretta, porte I/O, metadata del decoder e
+i primi opcode eseguibili. Gli opcode non ancora implementati restituiscono un
+errore esplicito.
 
 ---
 
@@ -56,6 +57,7 @@ retronet-8008/
 |   |-- errors.go
 |   |-- helpers.go
 |   |-- io.go
+|   |-- load.go
 |   |-- memory.go
 |   |-- opcode.go
 |   |-- opcodes.go
@@ -64,6 +66,7 @@ retronet-8008/
 |   |-- decoder_test.go
 |   |-- helpers_test.go
 |   |-- io_test.go
+|   |-- load_test.go
 |   |-- memory_test.go
 |   `-- step_test.go
 |-- docs/
@@ -71,6 +74,7 @@ retronet-8008/
 |   |-- decoder.md
 |   |-- flags.md
 |   |-- io.md
+|   |-- istruzioni.md
 |   |-- memoria.md
 |   |-- registri.md
 |   |-- roadmap.md
@@ -92,8 +96,9 @@ radice ed e' importabile da CLI, esempi e test.
 2. Stato CPU base. Completato.
 3. Memoria diretta a 16 KB e I/O separato. Completato.
 4. Fetch, decoder e `Step`. Completato.
-5. Load e move.
-6. Famiglie istruzionali successive, una alla volta, con test e documentazione.
+5. Load e move. Completato.
+6. ALU e flag.
+7. Famiglie istruzionali successive, una alla volta, con test e documentazione.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -102,5 +107,5 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 # Limiti noti
 
 - La CLI non carica ancora programmi.
-- Non esistono ancora istruzioni implementate.
+- Solo load/move sono implementate; ALU, salti, HLT e I/O istruzionale mancano ancora.
 - Timing, T-state e interrupt/jam instruction sono rimandati a milestone future.

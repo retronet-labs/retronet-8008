@@ -20,6 +20,7 @@ Questo documento descrive il modello generale del core CPU:
 - memoria diretta da 16 KB
 - bus I/O separato
 - decoder opcode e ciclo `Step`
+- prime istruzioni load/move
 
 ---
 
@@ -45,6 +46,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `FlatMemory` modella lo spazio diretto da 16 KB
 - `Ports` modella le porte input/output separate
 - `Decode` e `Step` gestiscono fetch e dispatch istruzione
+- `L`, `LI` e `NOP` costruiscono opcode load/move per test ed esempi
 
 ---
 
@@ -58,12 +60,13 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - I/O separato con 8 porte input e 24 porte output.
 - Decoder tabellare da 256 opcode.
 - `Step` con fetch opcode, fetch operandi e incremento `PC`.
+- Istruzioni load/move tra registri, immediati e `M`.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
-- Istruzioni 8008.
+- Famiglie istruzionali restanti.
 - Semantica completa di `HLT`, `STOPPED`, interrupt e jam instruction.
 - Timing e T-state.

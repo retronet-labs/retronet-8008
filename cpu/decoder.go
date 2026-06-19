@@ -18,12 +18,19 @@ func buildDecoder() [256]Opcode {
 	var table [256]Opcode
 	for i := range table {
 		code := byte(i)
+		execute := ExecuteFunc(unimplementedExecute)
+		if isLoadImmediateOpcode(code) {
+			execute = executeLoadImmediate
+		}
+		if isLoadMoveOpcode(code) {
+			execute = executeLoadMove
+		}
 		table[i] = Opcode{
 			Code:     code,
 			Mnemonic: mnemonicFor(code),
 			Length:   lengthFor(code),
 			States:   statesFor(code),
-			Execute:  unimplementedExecute,
+			Execute:  execute,
 		}
 	}
 	return table

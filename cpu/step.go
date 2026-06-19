@@ -2,9 +2,9 @@ package cpu
 
 // Step esegue il ciclo fetch-decode-execute di una singola istruzione.
 //
-// In questa milestone il decoder conosce lunghezza e metadata degli opcode, ma
-// le funzioni esecutive sono ancora segnaposto: Step consuma opcode e operandi,
-// aggiorna il PC a 14 bit e poi restituisce ErrUnimplementedOpcode.
+// Step consuma opcode e operandi, aggiorna il PC a 14 bit e invoca la funzione
+// esecutiva registrata nel decoder. Gli opcode non ancora implementati
+// restituiscono ErrUnimplementedOpcode.
 func (c *CPU8008) Step(mem Memory, io IO) error {
 	if mem == nil {
 		return ErrNilMemory

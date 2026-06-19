@@ -68,3 +68,21 @@ func TestConditionCodes(t *testing.T) {
 		}
 	}
 }
+
+func TestLoadOpcodeHelpers(t *testing.T) {
+	if got := L(RegA, RegB); got != 0xC1 {
+		t.Fatalf("L(RegA, RegB) = 0x%02X, want 0xC1", got)
+	}
+	if got := L(RegM, RegA); got != 0xF8 {
+		t.Fatalf("L(RegM, RegA) = 0x%02X, want 0xF8", got)
+	}
+	if got := LI(RegD); got != 0x1E {
+		t.Fatalf("LI(RegD) = 0x%02X, want 0x1E", got)
+	}
+	if got := LI(RegM); got != 0x3E {
+		t.Fatalf("LI(RegM) = 0x%02X, want 0x3E", got)
+	}
+	if got := NOP(); got != 0xC0 {
+		t.Fatalf("NOP() = 0x%02X, want 0xC0", got)
+	}
+}

@@ -21,7 +21,7 @@ fuori range viene ricondotto ai 14 bit bassi:
 - `0x4000` diventa `0x0000`
 - `0xFFFF` diventa `0x3FFF`
 
-Il pseudo-registro `M` usera' la memoria puntata da `HL`, con `H` limitato ai
+Il pseudo-registro `M` usa la memoria puntata da `HL`, con `H` limitato ai
 suoi 6 bit bassi.
 
 ---
@@ -44,6 +44,7 @@ Il package `cpu` espone:
 - Lettura e scrittura byte.
 - Memoria piatta da 16 KB.
 - Mascheramento degli indirizzi a 14 bit.
+- Accesso al pseudo-registro `M` per load/move tramite `HL`.
 - Test su zero init, lettura, scrittura e wrap degli indirizzi.
 
 ---
@@ -51,6 +52,6 @@ Il package `cpu` espone:
 ## Da implementare
 
 - Distinzione opzionale ROM/RAM per profili macchina.
-- Esecuzione reale delle istruzioni fetchate.
-- Accesso al pseudo-registro `M`.
+- Esecuzione reale delle famiglie istruzionali restanti.
+- Accesso al pseudo-registro `M` dalle altre famiglie istruzionali.
 - Caricamento binari dalla CLI.

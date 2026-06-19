@@ -32,3 +32,28 @@ func regBits(r Register) byte {
 func condBits(c Condition) byte {
 	return byte(c) & 0x03
 }
+
+// NOP restituisce un opcode no-op della famiglia load.
+//
+// Sul decoder 8008 i load con sorgente e destinazione uguali non modificano lo
+// stato. Usiamo LAA come no-op leggibile per test ed esempi.
+func NOP() byte { return L(RegA, RegA) }
+
+// L costruisce un opcode di trasferimento tra registri o pseudo-registro M.
+//
+// Esempi:
+//
+//	L(RegA, RegB) carica B in A.
+//	L(RegM, RegA) scrive A nella memoria puntata da HL.
+//	L(RegA, RegM) legge in A la memoria puntata da HL.
+func L(dst, src Register) byte {
+	return 0xC0 | (regBits(dst) << 3) | regBits(src)
+}
+
+// LI costruisce il primo byte di un load immediato.
+//
+// Il byte immediato va scritto subito dopo l'opcode in memoria. Con dst=RegM
+// produce LMI, cioe' scrittura immediata nella memoria puntata da HL.
+func LI(dst Register) byte {
+	return 0x06 | (regBits(dst) << 3)
+}

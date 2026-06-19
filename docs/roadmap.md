@@ -66,11 +66,25 @@ Contenuto:
 
 ---
 
+## Milestone 4 - Load e move
+
+Stato: completata.
+
+Contenuto:
+
+- trasferimenti tra registri
+- load immediati
+- pseudo-registro `M`
+- lettura e scrittura tramite `HL`
+- helper mini-assembler `L`, `LI` e `NOP`
+- test su registri, immediati e memoria
+
+---
+
 ## Milestone successive
 
 Le istruzioni saranno implementate per famiglie:
 
-- load e move
 - ALU e flag
 - rotate
 - jump, call, return e restart
