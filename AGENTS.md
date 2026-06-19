@@ -12,7 +12,7 @@ dipendere da una macchina storica specifica.
 
 ## Stato
 
-Sono completate le milestone 0-17 e le milestone 20-21:
+Sono completate le milestone 0-17 e le milestone 20-22:
 
 - core CPU, decoder e famiglie istruzionali 8008
 - memoria e I/O separati
@@ -25,6 +25,7 @@ Sono completate le milestone 0-17 e le milestone 20-21:
 - front panel con step/run/stop, jam/RST, switch, examine e deposit
 - timing Intel con stati, cicli PCI/PCR/PCW/PCC e contatori CPU
 - READY/WAIT per ciclo e interrupt jammed al prossimo confine PCI
+- trace JSON e debugger con breakpoint/watchpoint
 
 La roadmap dettagliata e' in `docs/roadmap.md`.
 
@@ -58,6 +59,8 @@ package testato, senza una directory `tests/` separata.
 - `StateCount` conta stati Intel, ognuno formato da due clock bifase.
 - READY basso non esegue side-effect e ogni tentativo registra un WAIT.
 - `RequestInterrupt` non avanza il PC prima della jam instruction.
+- I loader attraverso `ObservableMemory` non devono emettere eventi runtime.
+- Breakpoint PC/opcode fermano prima; watchpoint memoria/I/O fermano dopo.
 - Non aggiungere ROM storiche senza provenienza e licenza documentate.
 
 ## Verifica
@@ -82,6 +85,5 @@ Prima di un commit eseguire anche `gofmt` sui file Go modificati e
 
 Ordine consigliato:
 
-1. trace strutturato e debugger
-2. suite di conformance sintetica
-3. periferiche generiche configurabili
+1. suite di conformance sintetica
+2. periferiche generiche configurabili

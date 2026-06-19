@@ -334,9 +334,28 @@ Contenuto:
 
 ---
 
+## Milestone 22 - Trace strutturato e debugger
+
+Stato: completata. Non richiede profili o ROM storiche.
+
+Contenuto:
+
+- `ObservableMemory` trasparente con scritture effettive osservabili
+- `TraceEvent` JSON con CPU prima/dopo, timing, memoria, I/O e WAIT
+- trace delle jam instruction da interrupt
+- debugger con breakpoint PC e opcode
+- watchpoint sulle scritture memoria
+- breakpoint input/output per porta
+- motivi di stop distinti
+- file JSON Lines tramite `-trace-json`
+- opzioni CLI ripetibili per breakpoint e watchpoint
+- test package e integrazione CLI
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare
 - mappe memoria storiche piu' precise per Intellec e SCELBI
 - cassette e altre periferiche virtuali
-- trace strutturato, debugger e conformance sintetica
+- conformance sintetica e periferiche generiche configurabili

@@ -70,6 +70,13 @@ type interruptRequest struct {
 	operandCount byte
 }
 
+// JamInstruction e' una copia pubblica di una richiesta interrupt pendente.
+type JamInstruction struct {
+	Code         byte
+	Operands     [2]byte
+	OperandCount byte
+}
+
 // FrontPanel coordina il core, la memoria e l'I/O come dispositivo esterno.
 // Solo Stop e i selettori atomici sono pensati per uso concorrente con Run.
 type FrontPanel struct {
@@ -202,6 +209,20 @@ func (p *FrontPanel) InterruptPending() bool {
 	p.interruptMu.Lock()
 	defer p.interruptMu.Unlock()
 	return p.pendingInterrupt != nil
+}
+
+// PendingInterrupt restituisce la jam instruction in attesa.
+func (p *FrontPanel) PendingInterrupt() (JamInstruction, bool) {
+	p.interruptMu.Lock()
+	defer p.interruptMu.Unlock()
+	if p.pendingInterrupt == nil {
+		return JamInstruction{}, false
+	}
+	return JamInstruction{
+		Code:         p.pendingInterrupt.code,
+		Operands:     p.pendingInterrupt.operands,
+		OperandCount: p.pendingInterrupt.operandCount,
+	}, true
 }
 
 // Reset applica il reset storico della CPU senza modificare i selettori.

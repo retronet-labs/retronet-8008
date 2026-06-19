@@ -31,6 +31,11 @@ Opzioni:
 - `-panel-address`: seleziona l'indirizzo esaminato dal pannello.
 - `-ready`: livello READY globale; con `false` il run termina in WAIT.
 - `-interrupt-rst`: forza un vettore `RST 0..7` prima del primo fetch.
+- `-trace-json`: scrive eventi strutturati in un file JSON Lines.
+- `-break`: breakpoint PC; ripetibile.
+- `-break-opcode`: breakpoint opcode; ripetibile.
+- `-watch`: watchpoint scrittura memoria; ripetibile.
+- `-break-input`, `-break-output`: breakpoint I/O; ripetibili.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
 - `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
 - `-trace`: stampa ogni istruzione prima dell'esecuzione.
@@ -174,6 +179,10 @@ per la lettura mostrata e non modifica il PC.
 
 Il campo `stop_reason` distingue `cpu-stopped`, `requested`, `waiting` e
 `limit`. READY basso non viene riportato come errore e non incrementa `steps`.
+
+Breakpoint e watchpoint attivano `machine.Debugger`. Il run puo' terminare anche
+con `breakpoint`, `watchpoint` o `io-breakpoint`. Il file `-trace-json` contiene
+solo JSON Lines; il dump finale resta su stdout.
 
 ---
 

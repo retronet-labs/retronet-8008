@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -381,6 +382,82 @@ func TestRunRejectsInvalidInterruptRST(t *testing.T) {
 		t.Fatalf("run exit = %d, want 2", code)
 	}
 	if !strings.Contains(stderr.String(), "interrupt-rst non valido") {
+		t.Fatalf("stderr = %s", stderr.String())
+	}
+}
+
+func TestRunWritesStructuredJSONTrace(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.NOP(), cpu.HLT()})
+	tracePath := filepath.Join(t.TempDir(), "trace.jsonl")
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-trace-json", tracePath, "-steps", "8"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	data, err := os.ReadFile(tracePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("trace lines = %d, want 2:\n%s", len(lines), data)
+	}
+	for i, line := range lines {
+		var event machine.TraceEvent
+		if err := json.Unmarshal([]byte(line), &event); err != nil {
+			t.Fatalf("line %d JSON = %v", i, err)
+		}
+		if event.Kind != machine.TraceInstruction || event.PC != uint16(i) {
+			t.Fatalf("event %d = %+v", i, event)
+		}
+	}
+}
+
+func TestRunStopsBeforeDebuggerBreakpoint(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.NOP()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-break", "0x0000", "-steps", "8"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "steps=0 limit_reached=false stop_reason=breakpoint") {
+		t.Fatalf("output = %s", stdout.String())
+	}
+}
+
+func TestRunStopsAfterMemoryWatchpoint(t *testing.T) {
+	bin := writeTempProgram(t, []byte{
+		cpu.LI(cpu.RegH), 0x01,
+		cpu.LI(cpu.RegL), 0x00,
+		cpu.LI(cpu.RegM), 0xAA,
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-watch", "0x0100", "-steps", "8"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "steps=3 limit_reached=false stop_reason=watchpoint") {
+		t.Fatalf("output = %s", stdout.String())
+	}
+}
+
+func TestRunRejectsInvalidDebuggerPort(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.HLT()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-break-output", "7"}, &stdout, &stderr)
+
+	if code != 2 {
+		t.Fatalf("run exit = %d, want 2", code)
+	}
+	if !strings.Contains(stderr.String(), "porta output 8008 non valida") {
 		t.Fatalf("stderr = %s", stderr.String())
 	}
 }

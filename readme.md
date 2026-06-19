@@ -70,6 +70,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - front panel con jam, step/run/stop, switch ed examine/deposit
 - timing Intel con cicli macchina e contatori cumulativi
 - READY/WAIT per ciclo macchina e interrupt sincronizzato
+- trace JSON e debugger con breakpoint/watchpoint
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -92,12 +93,16 @@ retronet-8008/
 |       |-- main.go
 |       `-- main_test.go
 |-- machine/
+|   |-- debugger.go
+|   |-- debugger_test.go
 |   |-- frontpanel.go
 |   |-- frontpanel_test.go
 |   |-- io.go
 |   |-- io_test.go
 |   |-- memory.go
 |   |-- memory_test.go
+|   |-- observable_memory.go
+|   |-- observable_memory_test.go
 |   |-- profile.go
 |   |-- profile_test.go
 |   |-- terminal.go
@@ -138,6 +143,7 @@ retronet-8008/
 |   |-- architettura.md
 |   |-- cli.md
 |   |-- control-lines.md
+|   |-- debugger.md
 |   |-- decoder.md
 |   |-- disassembler.md
 |   |-- flags.md
@@ -185,7 +191,8 @@ radice ed e' importabile da CLI, esempi e test.
 19. Mappe e ROM storiche verificate. Rinviato in attesa delle fonti.
 20. Timing Intel e cicli macchina. Completato.
 21. READY e interrupt al confine PCI. Completato.
-22. Trace strutturato, debugger, conformance e periferiche generiche.
+22. Trace strutturato e debugger. Completato.
+23. Conformance sintetica e periferiche generiche.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 

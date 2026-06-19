@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -33,6 +34,12 @@ type runConfig struct {
 	ready         bool
 	interruptRST  byte
 	interruptSet  bool
+	traceJSONPath string
+	breakPC       addressFlags
+	breakOpcode   byteFlags
+	watchMemory   addressFlags
+	breakInput    byteFlags
+	breakOutput   byteFlags
 	roms          romFlags
 	inputs        inputFlags
 }
@@ -87,6 +94,44 @@ func (i *inputFlags) String() string {
 	return strings.Join(parts, ",")
 }
 
+type addressFlags []uint16
+
+func (a *addressFlags) String() string {
+	parts := make([]string, len(*a))
+	for i, value := range *a {
+		parts[i] = fmt.Sprintf("0x%04X", value)
+	}
+	return strings.Join(parts, ",")
+}
+
+func (a *addressFlags) Set(value string) error {
+	addr, err := parseAddress(value)
+	if err != nil {
+		return err
+	}
+	*a = append(*a, addr)
+	return nil
+}
+
+type byteFlags []byte
+
+func (b *byteFlags) String() string {
+	parts := make([]string, len(*b))
+	for i, value := range *b {
+		parts[i] = fmt.Sprintf("0x%02X", value)
+	}
+	return strings.Join(parts, ",")
+}
+
+func (b *byteFlags) Set(value string) error {
+	parsed, err := parseByte(value)
+	if err != nil {
+		return err
+	}
+	*b = append(*b, parsed)
+	return nil
+}
+
 func (i *inputFlags) Set(value string) error {
 	portText, valueText, ok := strings.Cut(value, "=")
 	if !ok {
@@ -133,9 +178,14 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	}
 
 	c := cpu.NewCPU8008()
-	mem, err := profile.NewMemory()
+	baseMemory, err := profile.NewMemory()
 	if err != nil {
 		fmt.Fprintf(stderr, "errore mappa memoria: %v\n", err)
+		return 2
+	}
+	mem, err := machine.NewObservableMemory(baseMemory)
+	if err != nil {
+		fmt.Fprintf(stderr, "errore memoria osservabile: %v\n", err)
 		return 2
 	}
 	ports := profile.NewIO()
@@ -229,8 +279,36 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	if cfg.trace {
 		trace = stdout
 	}
-	executed, stopReason, err := runSteps(panel, mem, cfg.steps, trace)
-	limitReached := stopReason == machine.PanelStoppedByLimit
+	debugActive := cfg.traceJSONPath != "" || len(cfg.breakPC) > 0 || len(cfg.breakOpcode) > 0 ||
+		len(cfg.watchMemory) > 0 || len(cfg.breakInput) > 0 || len(cfg.breakOutput) > 0
+	var executed uint64
+	var stopReason string
+	if debugActive {
+		debugger, err := configureDebugger(panel, mem, ports, cfg)
+		if err != nil {
+			fmt.Fprintf(stderr, "errore debugger: %v\n", err)
+			return 2
+		}
+		finishTrace, traceErr := configureStructuredTrace(debugger, cfg.traceJSONPath)
+		if traceErr != nil {
+			fmt.Fprintf(stderr, "errore trace JSON: %v\n", traceErr)
+			return 1
+		}
+		result, runErr := debugger.Run(cfg.steps)
+		if finishTrace != nil {
+			if traceErr := finishTrace(); runErr == nil && traceErr != nil {
+				runErr = traceErr
+			}
+		}
+		executed = result.Steps
+		stopReason = string(result.Reason)
+		err = runErr
+	} else {
+		var reason machine.PanelStopReason
+		executed, reason, err = runSteps(panel, mem, cfg.steps, trace)
+		stopReason = string(reason)
+	}
+	limitReached := stopReason == string(machine.PanelStoppedByLimit) || stopReason == string(machine.DebugStoppedLimit)
 	printDump(stdout, c, cfg, loaded, len(cfg.roms), executed, limitReached, stopReason)
 	if cfg.panel {
 		printPanel(stdout, panel.Snapshot())
@@ -269,6 +347,12 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	fs.StringVar(&cfg.terminalInput, "terminal-input", "", "accoda testo ASCII al terminale e abilita -terminal")
 	fs.BoolVar(&cfg.panel, "panel", false, "stampa lo stato del front panel dopo l'esecuzione")
 	fs.BoolVar(&cfg.ready, "ready", true, "livello READY globale; false ferma il run in WAIT")
+	fs.StringVar(&cfg.traceJSONPath, "trace-json", "", "scrive eventi JSON Lines nel file indicato")
+	fs.Var(&cfg.breakPC, "break", "breakpoint PC a 14 bit; ripetibile")
+	fs.Var(&cfg.breakOpcode, "break-opcode", "breakpoint opcode a 8 bit; ripetibile")
+	fs.Var(&cfg.watchMemory, "watch", "watchpoint scrittura memoria a 14 bit; ripetibile")
+	fs.Var(&cfg.breakInput, "break-input", "breakpoint porta input; ripetibile")
+	fs.Var(&cfg.breakOutput, "break-output", "breakpoint porta output; ripetibile")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
@@ -371,6 +455,57 @@ func runSteps(panel *machine.FrontPanel, mem cpu.Memory, limit uint64, trace io.
 	return result.Steps, result.Reason, err
 }
 
+func configureDebugger(panel *machine.FrontPanel, mem cpu.Memory, ports *machine.CallbackIO, cfg runConfig) (*machine.Debugger, error) {
+	debugger, err := machine.NewDebugger(panel, mem, ports)
+	if err != nil {
+		return nil, err
+	}
+	for _, addr := range cfg.breakPC {
+		debugger.AddPCBreakpoint(addr)
+	}
+	for _, code := range cfg.breakOpcode {
+		debugger.AddOpcodeBreakpoint(code)
+	}
+	for _, addr := range cfg.watchMemory {
+		debugger.AddMemoryWatchpoint(addr)
+	}
+	for _, port := range cfg.breakInput {
+		if err := debugger.AddInputBreakpoint(port); err != nil {
+			return nil, err
+		}
+	}
+	for _, port := range cfg.breakOutput {
+		if err := debugger.AddOutputBreakpoint(port); err != nil {
+			return nil, err
+		}
+	}
+	return debugger, nil
+}
+
+func configureStructuredTrace(debugger *machine.Debugger, path string) (func() error, error) {
+	if path == "" {
+		return nil, nil
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return nil, err
+	}
+	encoder := json.NewEncoder(file)
+	var encodeErr error
+	debugger.SetTraceSink(func(event machine.TraceEvent) {
+		if encodeErr == nil {
+			encodeErr = encoder.Encode(event)
+		}
+	})
+	return func() error {
+		closeErr := file.Close()
+		if encodeErr != nil {
+			return encodeErr
+		}
+		return closeErr
+	}, nil
+}
+
 func printDisassembly(w io.Writer, mem cpu.Memory, pc uint16, count uint64) error {
 	for i := uint64(0); i < count; i++ {
 		d, err := cpu.Disassemble(mem, pc)
@@ -436,7 +571,7 @@ func printProfiles(w io.Writer) {
 	}
 }
 
-func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, roms int, executed uint64, limitReached bool, stopReason machine.PanelStopReason) {
+func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, roms int, executed uint64, limitReached bool, stopReason string) {
 	fmt.Fprintf(w, "profile=%s loaded=%d roms=%d addr=0x%04X pc_start=0x%04X steps=%d limit_reached=%v stop_reason=%s\n", cfg.profileName, loaded, roms, cfg.loadAt, cfg.startPC, executed, limitReached, stopReason)
 	fmt.Fprintf(w, "A=0x%02X B=0x%02X C=0x%02X D=0x%02X E=0x%02X H=0x%02X L=0x%02X\n", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
 	fmt.Fprintf(w, "PC=0x%04X SP=%d Halted=%v Stopped=%v\n", c.PC, c.SP, c.Halted, c.Stopped)
