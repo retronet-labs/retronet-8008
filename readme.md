@@ -21,6 +21,9 @@ go run ./cmd/retronet-8008 -bin programma.bin -steps 1000
 
 # disassembla 8 istruzioni senza eseguire
 go run ./cmd/retronet-8008 -bin programma.bin -disasm 8
+
+# esegue stampando ogni istruzione
+go run ./cmd/retronet-8008 -bin programma.bin -steps 1000 -trace
 ```
 
 ---
@@ -43,6 +46,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - istruzioni I/O `INP` e `OUT`
 - CLI runner per binari raw con dump registri
 - disassembler minimale con contesto memoria
+- trace istruzione per istruzione nella CLI
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -131,7 +135,8 @@ radice ed e' importabile da CLI, esempi e test.
 10. I/O istruzionale. Completato.
 11. CLI runner e tooling minimo. Completato.
 12. Disassembler minimale. Completato.
-13. Trace, profili macchina e ROM storiche.
+13. Trace istruzione per istruzione. Completato.
+14. Profili macchina, ROM storiche e timing.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 

@@ -65,6 +65,7 @@ memoria e restituisce una rappresentazione testuale senza modificare stato CPU.
 - Metadata di lunghezza per istruzioni da 1, 2 e 3 byte.
 - Mnemonici di base per le famiglie note.
 - Disassembler con contesto memoria, bytes e `NextPC`.
+- Trace CLI basato su disassembly del PC corrente prima di ogni `Step`.
 - `Step` con fetch opcode e operandi.
 - Esecuzione reale delle istruzioni load/move, ALU, rotate, control flow, HLT e I/O.
 - `Jam` per eseguire una istruzione esterna da stato stopped.
@@ -78,5 +79,5 @@ memoria e restituisce una rappresentazione testuale senza modificare stato CPU.
 
 ## Da implementare
 
-- Trace istruzione per istruzione.
+- Trace con snapshot registri e side effect.
 - Metadata temporali piu' accurati.

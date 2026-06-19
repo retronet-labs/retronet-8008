@@ -102,6 +102,53 @@ func TestRunDisassemblesWithoutExecution(t *testing.T) {
 	}
 }
 
+func TestRunTracesExecution(t *testing.T) {
+	bin := writeTempProgram(t, []byte{
+		cpu.LI(cpu.RegA), 0x2A,
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-steps", "8", "-trace"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	wantParts := []string{
+		"trace=0 0000: 06 2A    LAI #0x2A\n",
+		"trace=1 0002: 00       HLT\n",
+		"loaded=3 addr=0x0000 pc_start=0x0000 steps=2 limit_reached=false",
+		"A=0x2A",
+	}
+	for _, part := range wantParts {
+		if !strings.Contains(out, part) {
+			t.Fatalf("output missing %q:\n%s", part, out)
+		}
+	}
+}
+
+func TestRunTraceHonorsStepLimit(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.NOP(), cpu.NOP()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-steps", "1", "-trace"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "trace=0 0000: C0       NOP\n") {
+		t.Fatalf("output = %s, want trace for first NOP", out)
+	}
+	if strings.Contains(out, "trace=1") {
+		t.Fatalf("output = %s, did not expect trace beyond step limit", out)
+	}
+	if !strings.Contains(out, "steps=1 limit_reached=true") {
+		t.Fatalf("output = %s, want limit reached", out)
+	}
+}
+
 func TestRunRequiresBinaryPath(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 

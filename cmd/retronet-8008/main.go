@@ -21,6 +21,7 @@ type runConfig struct {
 	startPC uint16
 	steps   uint64
 	disasm  uint64
+	trace   bool
 }
 
 func main() {
@@ -67,7 +68,11 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		return 1
 	}
 
-	executed, limitReached, err := runSteps(c, mem, ports, cfg.steps)
+	var trace io.Writer
+	if cfg.trace {
+		trace = stdout
+	}
+	executed, limitReached, err := runSteps(c, mem, ports, cfg.steps, trace)
 	printDump(stdout, c, cfg, len(program), executed, limitReached)
 	if err != nil {
 		fmt.Fprintf(stderr, "errore esecuzione: %v\n", err)
@@ -86,6 +91,7 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	fs.StringVar(&cfg.binPath, "bin", "", "percorso del binario da caricare")
 	fs.Uint64Var(&cfg.steps, "steps", defaultStepLimit, "numero massimo di istruzioni da eseguire")
 	fs.Uint64Var(&cfg.disasm, "disasm", 0, "disassembla N istruzioni e termina senza eseguire")
+	fs.BoolVar(&cfg.trace, "trace", false, "stampa ogni istruzione prima dell'esecuzione")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
@@ -135,11 +141,18 @@ func validateLoadRange(addr uint16, size int) error {
 	return nil
 }
 
-func runSteps(c *cpu.CPU8008, mem cpu.Memory, ioBus cpu.IO, limit uint64) (uint64, bool, error) {
+func runSteps(c *cpu.CPU8008, mem cpu.Memory, ioBus cpu.IO, limit uint64, trace io.Writer) (uint64, bool, error) {
 	var executed uint64
 	for executed < limit {
 		if c.Halted || c.Stopped {
 			return executed, false, nil
+		}
+		if trace != nil {
+			d, err := cpu.Disassemble(mem, c.PC)
+			if err != nil {
+				return executed, false, err
+			}
+			fmt.Fprintf(trace, "trace=%d %s\n", executed, d.String())
 		}
 		err := c.Step(mem, ioBus)
 		if err != nil {

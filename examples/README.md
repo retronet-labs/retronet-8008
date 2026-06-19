@@ -24,4 +24,10 @@ Per vedere le istruzioni senza eseguirle:
 go run ./cmd/retronet-8008 -bin "$env:TEMP\load-a.bin" -disasm 2
 ```
 
+Per eseguire e vedere il flusso reale:
+
+```powershell
+go run ./cmd/retronet-8008 -bin "$env:TEMP\load-a.bin" -steps 8 -trace
+```
+
 Esempi Go veri e propri arriveranno con assembler e profili macchina.

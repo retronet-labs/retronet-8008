@@ -20,6 +20,7 @@ Opzioni:
   `-addr`.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
 - `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
+- `-trace`: stampa ogni istruzione prima dell'esecuzione.
 
 Gli indirizzi sono limitati allo spazio 14 bit dell'8008, quindi
 `0x0000-0x3FFF`. Il loader rifiuta binari che superano la fine dello spazio
@@ -65,9 +66,29 @@ Output:
 
 ---
 
+## Trace
+
+Durante l'esecuzione si puo' stampare ogni istruzione realmente eseguita:
+
+```powershell
+go run ./cmd/retronet-8008 -bin "$env:TEMP\load-a.bin" -steps 8 -trace
+```
+
+Output iniziale:
+
+```text
+trace=0 0000: 06 2A    LAI #0x2A
+trace=1 0002: 00       HLT
+loaded=3 addr=0x0000 pc_start=0x0000 steps=2 limit_reached=false
+```
+
+Il trace usa il PC corrente prima dello `Step`, quindi segue salti, call, return
+e restart invece di limitarsi alla sequenza lineare in memoria.
+
+---
+
 ## Limiti
 
 - Il formato supportato e' solo binario raw.
-- Il dump finale di esecuzione non include ancora trace istruzione per istruzione.
 - Le porte I/O usano `Ports`, l'implementazione semplice interna.
 - ROM storiche e profili macchina arriveranno in milestone successive.

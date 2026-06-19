@@ -34,14 +34,19 @@ Gli immediati sono mostrati come `#0xNN`. I target a 14 bit sono mostrati come
 
 ## CLI
 
-La CLI usa la stessa API con l'opzione `-disasm N`:
+La CLI usa la stessa API sia con l'opzione `-disasm N`, sia con `-trace` durante
+l'esecuzione:
 
 ```bash
 go run ./cmd/retronet-8008 -bin programma.bin -disasm 8
+go run ./cmd/retronet-8008 -bin programma.bin -steps 1000 -trace
 ```
 
 `-disasm` carica il binario raw, parte da `-pc` o da `-addr`, stampa `N`
 istruzioni e termina senza eseguire il programma.
+
+`-trace` invece disassembla il PC corrente prima di ogni `Step`, quindi segue
+il flusso effettivo del programma.
 
 ---
 
@@ -49,5 +54,4 @@ istruzioni e termina senza eseguire il programma.
 
 - Non esiste ancora un formato simbolico con label.
 - Il disassembler non annota stati, flag o side effect.
-- Non c'e' ancora trace durante l'esecuzione; questa sara' una milestone
-  separata.
+- Il trace non include ancora snapshot registri per ogni istruzione.

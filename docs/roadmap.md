@@ -195,8 +195,22 @@ Contenuto:
 
 ---
 
+## Milestone 12 - Trace istruzione per istruzione
+
+Stato: completata.
+
+Contenuto:
+
+- opzione CLI `-trace`
+- disassembly del PC corrente prima di ogni `Step`
+- trace coerente con salti, call, return e halt
+- integrazione con limite `-steps`
+- dump finale invariato dopo il trace
+- test su trace di esecuzione e limite step
+
+---
+
 ## Milestone successive
 
-- trace istruzione per istruzione
 - profili macchina e ROM storiche
 - timing e T-state

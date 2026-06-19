@@ -324,4 +324,4 @@ Dopo due `Step`, `A = 0xA5` e la porta output `16` contiene `0xA5`.
 
 ## Da implementare
 
-- Trace istruzione per istruzione.
+- Trace con snapshot registri e side effect.
