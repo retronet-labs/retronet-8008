@@ -80,6 +80,28 @@ func TestRunReportsLimitReached(t *testing.T) {
 	}
 }
 
+func TestRunDisassemblesWithoutExecution(t *testing.T) {
+	bin := writeTempProgram(t, []byte{
+		cpu.LI(cpu.RegA), 0x2A,
+		cpu.JMP(), 0x00, 0x10,
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-disasm", "2"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	want := "0000: 06 2A    LAI #0x2A\n0002: 44 00 10 JMP 0x1000\n"
+	if out != want {
+		t.Fatalf("stdout = %q, want %q", out, want)
+	}
+	if stderr.Len() != 0 {
+		t.Fatalf("stderr = %s, want empty", stderr.String())
+	}
+}
+
 func TestRunRequiresBinaryPath(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 

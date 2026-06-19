@@ -324,4 +324,4 @@ Dopo due `Step`, `A = 0xA5` e la porta output `16` contiene `0xA5`.
 
 ## Da implementare
 
-- Disassembler e trace istruzione per istruzione.
+- Trace istruzione per istruzione.

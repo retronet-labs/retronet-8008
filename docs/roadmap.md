@@ -179,9 +179,24 @@ Contenuto:
 
 ---
 
+## Milestone 11 - Disassembler minimale
+
+Stato: completata.
+
+Contenuto:
+
+- `cpu.Disassemble(mem, pc)`
+- struct `Disassembly` con PC, opcode, bytes, operando e `NextPC`
+- formattazione compatta `0000: 06 2A    LAI #0x2A`
+- lettura operandi da memoria con wrap a 14 bit
+- target 14 bit mascherati come in esecuzione
+- opzione CLI `-disasm N`
+- test su istruzioni 1/2/3 byte, wrap e CLI
+
+---
+
 ## Milestone successive
 
-- disassembler con contesto memoria
 - trace istruzione per istruzione
 - profili macchina e ROM storiche
 - timing e T-state

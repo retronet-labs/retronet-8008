@@ -19,6 +19,7 @@ Opzioni:
 - `-pc`: program counter iniziale, decimale o `0xHEX`. Default uguale ad
   `-addr`.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
+- `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
 
 Gli indirizzi sono limitati allo spazio 14 bit dell'8008, quindi
 `0x0000-0x3FFF`. Il loader rifiuta binari che superano la fine dello spazio
@@ -47,9 +48,26 @@ Stack=[0x0003 0x0000 0x0000 0x0000 0x0000 0x0000 0x0000 0x0000]
 
 ---
 
+## Disassembly
+
+Lo stesso binario puo' essere listato senza esecuzione:
+
+```powershell
+go run ./cmd/retronet-8008 -bin "$env:TEMP\load-a.bin" -disasm 2
+```
+
+Output:
+
+```text
+0000: 06 2A    LAI #0x2A
+0002: 00       HLT
+```
+
+---
+
 ## Limiti
 
 - Il formato supportato e' solo binario raw.
-- Non c'e' ancora disassembler nel dump.
+- Il dump finale di esecuzione non include ancora trace istruzione per istruzione.
 - Le porte I/O usano `Ports`, l'implementazione semplice interna.
 - ROM storiche e profili macchina arriveranno in milestone successive.

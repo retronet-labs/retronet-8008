@@ -20,6 +20,7 @@ type runConfig struct {
 	loadAt  uint16
 	startPC uint16
 	steps   uint64
+	disasm  uint64
 }
 
 func main() {
@@ -53,6 +54,14 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		mem.Write(cfg.loadAt+uint16(i), b)
 	}
 
+	if cfg.disasm > 0 {
+		if err := printDisassembly(stdout, mem, cfg.startPC, cfg.disasm); err != nil {
+			fmt.Fprintf(stderr, "errore disassembly: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+
 	if err := c.Jam(mem, ports, cpu.JMP(), byte(cfg.startPC), byte(cfg.startPC>>8)); err != nil {
 		fmt.Fprintf(stderr, "errore avvio CPU: %v\n", err)
 		return 1
@@ -76,6 +85,7 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	startPC := fs.String("pc", "", "program counter iniziale, default uguale ad -addr")
 	fs.StringVar(&cfg.binPath, "bin", "", "percorso del binario da caricare")
 	fs.Uint64Var(&cfg.steps, "steps", defaultStepLimit, "numero massimo di istruzioni da eseguire")
+	fs.Uint64Var(&cfg.disasm, "disasm", 0, "disassembla N istruzioni e termina senza eseguire")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
@@ -141,6 +151,18 @@ func runSteps(c *cpu.CPU8008, mem cpu.Memory, ioBus cpu.IO, limit uint64) (uint6
 		executed++
 	}
 	return executed, !(c.Halted || c.Stopped), nil
+}
+
+func printDisassembly(w io.Writer, mem cpu.Memory, pc uint16, count uint64) error {
+	for i := uint64(0); i < count; i++ {
+		d, err := cpu.Disassemble(mem, pc)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(w, d.String())
+		pc = d.NextPC
+	}
+	return nil
 }
 
 func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, executed uint64, limitReached bool) {

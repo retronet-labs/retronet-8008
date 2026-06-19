@@ -18,5 +18,10 @@ Su PowerShell:
 go run ./cmd/retronet-8008 -bin "$env:TEMP\load-a.bin" -steps 8
 ```
 
-Esempi Go veri e propri arriveranno con assembler/disassembler e profili
-macchina.
+Per vedere le istruzioni senza eseguirle:
+
+```powershell
+go run ./cmd/retronet-8008 -bin "$env:TEMP\load-a.bin" -disasm 2
+```
+
+Esempi Go veri e propri arriveranno con assembler e profili macchina.

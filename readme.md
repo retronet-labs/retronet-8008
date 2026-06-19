@@ -18,6 +18,9 @@ go test ./...
 
 # esegue un binario raw con la CLI minimale
 go run ./cmd/retronet-8008 -bin programma.bin -steps 1000
+
+# disassembla 8 istruzioni senza eseguire
+go run ./cmd/retronet-8008 -bin programma.bin -disasm 8
 ```
 
 ---
@@ -39,6 +42,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - `HLT`, stato `Stopped` e jam instruction esterna
 - istruzioni I/O `INP` e `OUT`
 - CLI runner per binari raw con dump registri
+- disassembler minimale con contesto memoria
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -63,6 +67,7 @@ retronet-8008/
 |   |-- control.go
 |   |-- cpu.go
 |   |-- decoder.go
+|   |-- disasm.go
 |   |-- errors.go
 |   |-- halt.go
 |   |-- helpers.go
@@ -79,6 +84,7 @@ retronet-8008/
 |   |-- control_test.go
 |   |-- cpu_test.go
 |   |-- decoder_test.go
+|   |-- disasm_test.go
 |   |-- halt_test.go
 |   |-- helpers_test.go
 |   |-- io_test.go
@@ -92,6 +98,7 @@ retronet-8008/
 |   |-- architettura.md
 |   |-- cli.md
 |   |-- decoder.md
+|   |-- disassembler.md
 |   |-- flags.md
 |   |-- io.md
 |   |-- istruzioni.md
@@ -123,7 +130,8 @@ radice ed e' importabile da CLI, esempi e test.
 9. HLT, stopped e jam instruction. Completato.
 10. I/O istruzionale. Completato.
 11. CLI runner e tooling minimo. Completato.
-12. Disassembler, trace e profili macchina.
+12. Disassembler minimale. Completato.
+13. Trace, profili macchina e ROM storiche.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -131,6 +139,6 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 
 # Limiti noti
 
-- La CLI carica solo binari raw, senza formati ROM o disassembler.
+- La CLI carica solo binari raw, senza formati ROM strutturati.
 - Le famiglie istruzionali principali sono implementate a livello funzionale.
 - Timing, T-state e dettagli elettrici dell'interrupt reale sono rimandati a milestone future.

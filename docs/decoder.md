@@ -41,6 +41,7 @@ Il package `cpu` espone:
 - `Instruction`, opcode fetchato con operandi
 - `Decode(op byte) Opcode`
 - `OpcodeTable() [256]Opcode`
+- `Disassemble(mem Memory, pc uint16) (Disassembly, error)`
 - `Step(mem Memory, io IO) error`
 - `Jam(mem Memory, io IO, code byte, operands ...byte) error`
 
@@ -53,6 +54,9 @@ Se `Halted` o `Stopped` sono veri, `Step` non accede alla memoria e restituisce
 valida il numero di operandi, porta la CPU in stato running ed esegue
 l'istruzione senza fetch da memoria.
 
+`Disassemble` usa gli stessi metadata del decoder, ma legge solo i byte da
+memoria e restituisce una rappresentazione testuale senza modificare stato CPU.
+
 ---
 
 ## Implementato ora
@@ -60,6 +64,7 @@ l'istruzione senza fetch da memoria.
 - Tabella decoder completa da 256 opcode.
 - Metadata di lunghezza per istruzioni da 1, 2 e 3 byte.
 - Mnemonici di base per le famiglie note.
+- Disassembler con contesto memoria, bytes e `NextPC`.
 - `Step` con fetch opcode e operandi.
 - Esecuzione reale delle istruzioni load/move, ALU, rotate, control flow, HLT e I/O.
 - `Jam` per eseguire una istruzione esterna da stato stopped.
@@ -73,6 +78,5 @@ l'istruzione senza fetch da memoria.
 
 ## Da implementare
 
-- Disassembler con contesto memoria.
 - Trace istruzione per istruzione.
 - Metadata temporali piu' accurati.
