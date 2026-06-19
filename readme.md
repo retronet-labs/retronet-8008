@@ -24,15 +24,15 @@ go run ./cmd/retronet-8008
 
 # Stato attuale
 
-Il progetto e' nella fase di bootstrap:
+Il progetto e' nella fase di stato CPU base:
 
 - struttura Go iniziale
-- package `cpu` in preparazione
+- package `cpu` con stato base dell'Intel 8008
 - documentazione italiana iniziale
 - nessun decoder e nessuna istruzione implementata
 
-Il primo obiettivo tecnico e' modellare lo stato base del processore:
-registri, flag, program counter a 14 bit, stack interno e reset.
+Sono gia' modellati registri, flag, program counter a 14 bit, stack interno e
+reset storico in stato fermo.
 
 ---
 
@@ -47,11 +47,21 @@ retronet-8008/
 │       └── main.go
 ├── cpu/
 ├── docs/
-│   └── roadmap.md
+│   ├── architettura.md
+│   ├── flags.md
+│   ├── registri.md
+│   ├── roadmap.md
+│   └── stack.md
 ├── examples/
 │   └── README.md
-└── testdata/
-    └── README.md
+├── testdata/
+│   └── README.md
+└── cpu/
+    ├── cpu.go
+    ├── helpers.go
+    ├── opcodes.go
+    ├── cpu_test.go
+    └── helpers_test.go
 ```
 
 Il layout segue volutamente quello di `go-4004`: il package `cpu` resta alla
@@ -61,8 +71,8 @@ radice ed e' importabile da CLI, esempi e test.
 
 # Roadmap breve
 
-1. Bootstrap del progetto.
-2. Stato CPU base.
+1. Bootstrap del progetto. Completato.
+2. Stato CPU base. Completato.
 3. Memoria diretta a 16 KB e I/O separato.
 4. Fetch, decoder e `Step`.
 5. Famiglie istruzionali, una alla volta, con test e documentazione.

@@ -7,7 +7,7 @@ testabili e documentate. Ogni milestone deve compilare e passare `go test ./...`
 
 ## Milestone 0 - Bootstrap progetto
 
-Stato: in corso.
+Stato: completata.
 
 Contenuto:
 
@@ -20,6 +20,8 @@ Contenuto:
 ---
 
 ## Milestone 1 - Stato CPU base
+
+Stato: completata.
 
 Contenuto:
 
