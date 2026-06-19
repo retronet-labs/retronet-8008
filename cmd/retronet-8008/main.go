@@ -11,17 +11,51 @@ import (
 	"strings"
 
 	"retronet-8008/cpu"
+	"retronet-8008/machine"
 )
 
-const defaultStepLimit = uint64(1000)
-
 type runConfig struct {
-	binPath string
-	loadAt  uint16
-	startPC uint16
-	steps   uint64
-	disasm  uint64
-	trace   bool
+	binPath      string
+	profileName  string
+	listProfiles bool
+	loadAt       uint16
+	startPC      uint16
+	steps        uint64
+	disasm       uint64
+	trace        bool
+	roms         romFlags
+}
+
+type romSpec struct {
+	name string
+	path string
+}
+
+type romFlags []romSpec
+
+func (r *romFlags) String() string {
+	if r == nil || len(*r) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(*r))
+	for _, spec := range *r {
+		parts = append(parts, spec.name+"="+spec.path)
+	}
+	return strings.Join(parts, ",")
+}
+
+func (r *romFlags) Set(value string) error {
+	name, path, ok := strings.Cut(value, "=")
+	if !ok {
+		return errors.New("usa nome=percorso")
+	}
+	name = strings.TrimSpace(name)
+	path = strings.TrimSpace(path)
+	if name == "" || path == "" {
+		return errors.New("nome e percorso ROM sono obbligatori")
+	}
+	*r = append(*r, romSpec{name: name, path: path})
+	return nil
 }
 
 func main() {
@@ -38,21 +72,45 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		return 2
 	}
 
-	program, err := os.ReadFile(cfg.binPath)
-	if err != nil {
-		fmt.Fprintf(stderr, "errore caricamento binario: %v\n", err)
-		return 1
+	if cfg.listProfiles {
+		printProfiles(stdout)
+		return 0
 	}
-	if err := validateLoadRange(cfg.loadAt, len(program)); err != nil {
-		fmt.Fprintf(stderr, "errore caricamento binario: %v\n", err)
-		return 1
+
+	profile, ok := machine.Lookup(cfg.profileName)
+	if !ok {
+		fmt.Fprintf(stderr, "errore profilo: profilo %q non disponibile\n", cfg.profileName)
+		return 2
 	}
 
 	c := cpu.NewCPU8008()
 	mem := cpu.NewFlatMemory()
 	ports := cpu.NewPorts()
-	for i, b := range program {
-		mem.Write(cfg.loadAt+uint16(i), b)
+
+	for _, spec := range cfg.roms {
+		data, err := os.ReadFile(spec.path)
+		if err != nil {
+			fmt.Fprintf(stderr, "errore caricamento ROM %s: %v\n", spec.name, err)
+			return 1
+		}
+		if err := profile.LoadROM(mem, spec.name, data); err != nil {
+			fmt.Fprintf(stderr, "errore caricamento ROM %s: %v\n", spec.name, err)
+			return 1
+		}
+	}
+
+	loaded := 0
+	if cfg.binPath != "" {
+		program, err := os.ReadFile(cfg.binPath)
+		if err != nil {
+			fmt.Fprintf(stderr, "errore caricamento binario: %v\n", err)
+			return 1
+		}
+		if err := machine.LoadBytes(mem, cfg.loadAt, program); err != nil {
+			fmt.Fprintf(stderr, "errore caricamento binario: %v\n", err)
+			return 1
+		}
+		loaded = len(program)
 	}
 
 	if cfg.disasm > 0 {
@@ -73,7 +131,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		trace = stdout
 	}
 	executed, limitReached, err := runSteps(c, mem, ports, cfg.steps, trace)
-	printDump(stdout, c, cfg, len(program), executed, limitReached)
+	printDump(stdout, c, cfg, loaded, len(cfg.roms), executed, limitReached)
 	if err != nil {
 		fmt.Fprintf(stderr, "errore esecuzione: %v\n", err)
 		return 1
@@ -89,16 +147,22 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	loadAt := fs.String("addr", "0x0000", "indirizzo di caricamento, decimale o 0xHEX")
 	startPC := fs.String("pc", "", "program counter iniziale, default uguale ad -addr")
 	fs.StringVar(&cfg.binPath, "bin", "", "percorso del binario da caricare")
-	fs.Uint64Var(&cfg.steps, "steps", defaultStepLimit, "numero massimo di istruzioni da eseguire")
+	fs.StringVar(&cfg.profileName, "profile", "generic", "profilo macchina da usare")
+	fs.BoolVar(&cfg.listProfiles, "profiles", false, "elenca i profili macchina disponibili")
+	fs.Var(&cfg.roms, "rom", "carica una ROM di profilo nel formato nome=percorso; ripetibile")
+	fs.Uint64Var(&cfg.steps, "steps", machine.DefaultStepLimit, "numero massimo di istruzioni da eseguire")
 	fs.Uint64Var(&cfg.disasm, "disasm", 0, "disassembla N istruzioni e termina senza eseguire")
 	fs.BoolVar(&cfg.trace, "trace", false, "stampa ogni istruzione prima dell'esecuzione")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
 	}
-	if cfg.binPath == "" {
+	if cfg.listProfiles {
+		return cfg, nil
+	}
+	if cfg.binPath == "" && len(cfg.roms) == 0 {
 		fs.Usage()
-		return cfg, errors.New("flag -bin obbligatorio")
+		return cfg, errors.New("flag -bin o -rom obbligatorio")
 	}
 
 	addr, err := parseAddress(*loadAt)
@@ -129,16 +193,6 @@ func parseAddress(value string) (uint16, error) {
 		return 0, fmt.Errorf("0x%04X fuori dallo spazio 14 bit", n)
 	}
 	return uint16(n), nil
-}
-
-func validateLoadRange(addr uint16, size int) error {
-	if size > cpu.AddressSpaceSize {
-		return fmt.Errorf("%d byte superano lo spazio indirizzabile %d byte", size, cpu.AddressSpaceSize)
-	}
-	if int(addr)+size > cpu.AddressSpaceSize {
-		return fmt.Errorf("%d byte a 0x%04X superano 0x%04X", size, addr, cpu.AddressMask)
-	}
-	return nil
 }
 
 func runSteps(c *cpu.CPU8008, mem cpu.Memory, ioBus cpu.IO, limit uint64, trace io.Writer) (uint64, bool, error) {
@@ -178,8 +232,21 @@ func printDisassembly(w io.Writer, mem cpu.Memory, pc uint16, count uint64) erro
 	return nil
 }
 
-func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, executed uint64, limitReached bool) {
-	fmt.Fprintf(w, "loaded=%d addr=0x%04X pc_start=0x%04X steps=%d limit_reached=%v\n", loaded, cfg.loadAt, cfg.startPC, executed, limitReached)
+func printProfiles(w io.Writer) {
+	for _, profile := range machine.Profiles() {
+		fmt.Fprintf(w, "%s: %s\n", profile.Name, profile.Description)
+		for _, slot := range profile.ROMSlots {
+			required := "optional"
+			if slot.Required {
+				required = "required"
+			}
+			fmt.Fprintf(w, "  rom %s @0x%04X max=%d %s - %s\n", slot.Name, slot.Address, slot.MaxSize, required, slot.Description)
+		}
+	}
+}
+
+func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, roms int, executed uint64, limitReached bool) {
+	fmt.Fprintf(w, "profile=%s loaded=%d roms=%d addr=0x%04X pc_start=0x%04X steps=%d limit_reached=%v\n", cfg.profileName, loaded, roms, cfg.loadAt, cfg.startPC, executed, limitReached)
 	fmt.Fprintf(w, "A=0x%02X B=0x%02X C=0x%02X D=0x%02X E=0x%02X H=0x%02X L=0x%02X\n", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
 	fmt.Fprintf(w, "PC=0x%04X SP=%d Halted=%v Stopped=%v\n", c.PC, c.SP, c.Halted, c.Stopped)
 	fmt.Fprintf(w, "Flags C=%v Z=%v S=%v P=%v\n", c.Carry, c.Zero, c.Sign, c.Parity)

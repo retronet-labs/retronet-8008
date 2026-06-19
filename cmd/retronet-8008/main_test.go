@@ -24,7 +24,7 @@ func TestRunLoadsProgramAndPrintsDump(t *testing.T) {
 	}
 	out := stdout.String()
 	wantParts := []string{
-		"loaded=3 addr=0x0000 pc_start=0x0000 steps=2 limit_reached=false",
+		"profile=generic loaded=3 roms=0 addr=0x0000 pc_start=0x0000 steps=2 limit_reached=false",
 		"A=0x2A",
 		"PC=0x0003",
 		"Halted=true Stopped=true",
@@ -51,7 +51,7 @@ func TestRunLoadsAtAddressAndStartsAtPC(t *testing.T) {
 	}
 	out := stdout.String()
 	wantParts := []string{
-		"loaded=4 addr=0x0010 pc_start=0x0010 steps=3 limit_reached=false",
+		"profile=generic loaded=4 roms=0 addr=0x0010 pc_start=0x0010 steps=3 limit_reached=false",
 		"A=0x33 B=0x33",
 		"PC=0x0014",
 	}
@@ -118,7 +118,7 @@ func TestRunTracesExecution(t *testing.T) {
 	wantParts := []string{
 		"trace=0 0000: 06 2A    LAI #0x2A\n",
 		"trace=1 0002: 00       HLT\n",
-		"loaded=3 addr=0x0000 pc_start=0x0000 steps=2 limit_reached=false",
+		"profile=generic loaded=3 roms=0 addr=0x0000 pc_start=0x0000 steps=2 limit_reached=false",
 		"A=0x2A",
 	}
 	for _, part := range wantParts {
@@ -157,8 +157,84 @@ func TestRunRequiresBinaryPath(t *testing.T) {
 	if code != 2 {
 		t.Fatalf("run exit = %d, want 2", code)
 	}
-	if !strings.Contains(stderr.String(), "flag -bin obbligatorio") {
+	if !strings.Contains(stderr.String(), "flag -bin o -rom obbligatorio") {
 		t.Fatalf("stderr = %s, want missing -bin error", stderr.String())
+	}
+}
+
+func TestRunListsProfiles(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-profiles"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	wantParts := []string{
+		"generic:",
+		"intellec-8:",
+		"scelbi-8b:",
+		"scelbi-8h:",
+		"rom monitor @0x0000",
+	}
+	for _, part := range wantParts {
+		if !strings.Contains(out, part) {
+			t.Fatalf("output missing %q:\n%s", part, out)
+		}
+	}
+}
+
+func TestRunLoadsProfileROM(t *testing.T) {
+	rom := writeTempProgram(t, []byte{
+		cpu.LI(cpu.RegA), 0x44,
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-profile", "intellec-8", "-rom", "monitor=" + rom, "-steps", "8"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	wantParts := []string{
+		"profile=intellec-8 loaded=0 roms=1 addr=0x0000 pc_start=0x0000 steps=2 limit_reached=false",
+		"A=0x44",
+		"Halted=true Stopped=true",
+	}
+	for _, part := range wantParts {
+		if !strings.Contains(out, part) {
+			t.Fatalf("output missing %q:\n%s", part, out)
+		}
+	}
+}
+
+func TestRunRejectsUnknownProfile(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.HLT()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-profile", "missing", "-bin", bin}, &stdout, &stderr)
+
+	if code != 2 {
+		t.Fatalf("run exit = %d, want 2", code)
+	}
+	if !strings.Contains(stderr.String(), `profilo "missing" non disponibile`) {
+		t.Fatalf("stderr = %s, want unknown profile error", stderr.String())
+	}
+}
+
+func TestRunRejectsUnknownROMSlot(t *testing.T) {
+	rom := writeTempProgram(t, []byte{cpu.HLT()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-rom", "monitor=" + rom}, &stdout, &stderr)
+
+	if code != 1 {
+		t.Fatalf("run exit = %d, want 1", code)
+	}
+	if !strings.Contains(stderr.String(), "slot ROM") {
+		t.Fatalf("stderr = %s, want slot ROM error", stderr.String())
 	}
 }
 

@@ -30,4 +30,17 @@ Per eseguire e vedere il flusso reale:
 go run ./cmd/retronet-8008 -bin "$env:TEMP\load-a.bin" -steps 8 -trace
 ```
 
-Esempi Go veri e propri arriveranno con assembler e profili macchina.
+Per vedere i profili macchina disponibili:
+
+```powershell
+go run ./cmd/retronet-8008 -profiles
+```
+
+Per caricare una ROM locale in uno slot di profilo:
+
+```powershell
+go run ./cmd/retronet-8008 -profile intellec-8 -rom monitor=monitor.bin -steps 1000
+```
+
+Esempi Go veri e propri arriveranno con assembler e programmi dimostrativi
+versionati.

@@ -210,7 +210,24 @@ Contenuto:
 
 ---
 
+## Milestone 13 - Profili macchina e ROM locali
+
+Stato: completata.
+
+Contenuto:
+
+- package `machine`
+- catalogo profili `generic`, `intellec-8`, `scelbi-8b` e `scelbi-8h`
+- slot ROM `monitor` per profili storici iniziali
+- caricamento ROM locali con validazione dello spazio 14 bit
+- opzioni CLI `-profile`, `-profiles` e `-rom`
+- nessuna ROM storica inclusa nel repository
+- test su profili, caricamento ROM e integrazione CLI
+
+---
+
 ## Milestone successive
 
-- profili macchina e ROM storiche
+- ROM storiche reali, solo quando provenance e licenze saranno chiare
+- mappe memoria storiche piu' precise per Intellec e SCELBI
 - timing e T-state

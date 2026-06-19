@@ -21,6 +21,7 @@ Questo documento descrive il modello generale del core CPU:
 - bus I/O separato
 - decoder opcode e ciclo `Step`
 - disassembler con contesto memoria
+- profili macchina sopra il core CPU
 - prime istruzioni load/move
 - ALU instruction-level e gestione flag
 - rotate dell'accumulatore
@@ -61,6 +62,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `JMP`, `JF`, `JT`, `CAL`, `CF`, `CT`, `RET`, `RF`, `RT` e `RST` costruiscono
   opcode di control flow leggibili
 - `INP` e `OUT` costruiscono opcode I/O leggibili
+- `machine.Profile` descrive profili macchina e slot ROM locali
 
 ---
 
@@ -83,11 +85,15 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Istruzioni jump, call, return e restart con stack interno.
 - `HLT` e alias `0x00`/`0x01`.
 - Istruzioni `INP` e `OUT` su bus I/O separato.
+- Profili macchina `generic`, `intellec-8`, `scelbi-8b` e `scelbi-8h`.
+- Caricamento ROM locali tramite slot di profilo.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
+- ROM storiche reali, solo quando provenance e licenze saranno chiare.
+- Mappe memoria storiche piu' precise.
 - Dettagli elettrici e temporali di interrupt e jam instruction reali.
 - Timing e T-state.

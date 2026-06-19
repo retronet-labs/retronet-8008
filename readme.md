@@ -24,6 +24,12 @@ go run ./cmd/retronet-8008 -bin programma.bin -disasm 8
 
 # esegue stampando ogni istruzione
 go run ./cmd/retronet-8008 -bin programma.bin -steps 1000 -trace
+
+# elenca profili macchina e slot ROM locali
+go run ./cmd/retronet-8008 -profiles
+
+# carica una ROM locale nello slot monitor del profilo Intellec
+go run ./cmd/retronet-8008 -profile intellec-8 -rom monitor=monitor.bin -steps 1000
 ```
 
 ---
@@ -47,11 +53,13 @@ Il progetto ha completato le prime milestone fondamentali:
 - CLI runner per binari raw con dump registri
 - disassembler minimale con contesto memoria
 - trace istruzione per istruzione nella CLI
+- profili macchina base e caricamento ROM locali
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
 reset storico in stato fermo, memoria diretta, porte I/O, metadata del decoder e
-le famiglie istruzionali iniziali eseguibili. Gli opcode non ancora implementati
+le famiglie istruzionali iniziali eseguibili. I profili storici sono scheletri
+senza ROM distribuite nel repository. Gli opcode non ancora implementati
 restituiscono un errore esplicito.
 
 ---
@@ -66,6 +74,9 @@ retronet-8008/
 |   `-- retronet-8008/
 |       |-- main.go
 |       `-- main_test.go
+|-- machine/
+|   |-- profile.go
+|   `-- profile_test.go
 |-- cpu/
 |   |-- alu.go
 |   |-- control.go
@@ -107,6 +118,7 @@ retronet-8008/
 |   |-- io.md
 |   |-- istruzioni.md
 |   |-- memoria.md
+|   |-- profili.md
 |   |-- registri.md
 |   |-- roadmap.md
 |   `-- stack.md
@@ -136,7 +148,8 @@ radice ed e' importabile da CLI, esempi e test.
 11. CLI runner e tooling minimo. Completato.
 12. Disassembler minimale. Completato.
 13. Trace istruzione per istruzione. Completato.
-14. Profili macchina, ROM storiche e timing.
+14. Profili macchina e caricamento ROM locali. Completato.
+15. ROM storiche reali, mappe memoria piu' precise, timing e T-state.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -144,6 +157,8 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 
 # Limiti noti
 
-- La CLI carica solo binari raw, senza formati ROM strutturati.
+- La CLI carica binari raw e ROM locali via profilo, senza formati ROM
+  strutturati.
 - Le famiglie istruzionali principali sono implementate a livello funzionale.
+- Il repository non include ROM storiche.
 - Timing, T-state e dettagli elettrici dell'interrupt reale sono rimandati a milestone future.
