@@ -16,8 +16,8 @@ repository.
 # lancia tutti i test
 go test ./...
 
-# esegue la CLI minimale
-go run ./cmd/retronet-8008
+# esegue un binario raw con la CLI minimale
+go run ./cmd/retronet-8008 -bin programma.bin -steps 1000
 ```
 
 ---
@@ -38,6 +38,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - istruzioni jump, call, return e restart
 - `HLT`, stato `Stopped` e jam instruction esterna
 - istruzioni I/O `INP` e `OUT`
+- CLI runner per binari raw con dump registri
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -55,7 +56,8 @@ retronet-8008/
 |-- readme.md
 |-- cmd/
 |   `-- retronet-8008/
-|       `-- main.go
+|       |-- main.go
+|       `-- main_test.go
 |-- cpu/
 |   |-- alu.go
 |   |-- control.go
@@ -88,6 +90,7 @@ retronet-8008/
 |   `-- test_helpers_test.go
 |-- docs/
 |   |-- architettura.md
+|   |-- cli.md
 |   |-- decoder.md
 |   |-- flags.md
 |   |-- io.md
@@ -119,7 +122,8 @@ radice ed e' importabile da CLI, esempi e test.
 8. Control flow e stack interno. Completato.
 9. HLT, stopped e jam instruction. Completato.
 10. I/O istruzionale. Completato.
-11. CLI runner e tooling minimo.
+11. CLI runner e tooling minimo. Completato.
+12. Disassembler, trace e profili macchina.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -127,6 +131,6 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 
 # Limiti noti
 
-- La CLI non carica ancora programmi.
+- La CLI carica solo binari raw, senza formati ROM o disassembler.
 - Le famiglie istruzionali principali sono implementate a livello funzionale.
 - Timing, T-state e dettagli elettrici dell'interrupt reale sono rimandati a milestone future.

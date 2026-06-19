@@ -162,9 +162,26 @@ Contenuto:
 
 ---
 
+## Milestone 10 - CLI runner minimale
+
+Stato: completata.
+
+Contenuto:
+
+- comando `cmd/retronet-8008`
+- caricamento di binari raw in `FlatMemory`
+- opzioni `-bin`, `-addr`, `-pc` e `-steps`
+- avvio tramite jam di `JMP` al PC iniziale
+- esecuzione con limite di istruzioni
+- stop pulito su `HLT`/`Stopped`
+- dump finale di registri, flag, PC, SP e stack interno
+- test unitari della CLI senza avviare processi esterni
+
+---
+
 ## Milestone successive
 
-- CLI con caricamento binario e dump registri
 - disassembler con contesto memoria
 - trace istruzione per istruzione
+- profili macchina e ROM storiche
 - timing e T-state
