@@ -1,0 +1,5 @@
+docs_do_not_commit/
+tmp/
+/retronet-8008
+/retronet-8008.exe
+*.test
