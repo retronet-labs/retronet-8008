@@ -17,6 +17,8 @@ Questo documento descrive il modello generale del core CPU:
 - `PC` a 14 bit
 - stack interno da 8 voci a 14 bit
 - stati `Halted` e `Stopped`
+- memoria diretta da 16 KB
+- bus I/O separato
 
 ---
 
@@ -39,6 +41,8 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `addr14` maschera gli indirizzi a 14 bit
 - `hlAddress` calcola l'indirizzo del pseudo-registro `M`
 - `stackIndex` maschera lo stack pointer a 3 bit
+- `FlatMemory` modella lo spazio diretto da 16 KB
+- `Ports` modella le porte input/output separate
 
 ---
 
@@ -48,13 +52,14 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Reset deterministico.
 - Costanti per registri e condizioni.
 - Helper per indirizzi a 14 bit, HL e stack pointer.
+- Memoria piatta da 16 KB.
+- I/O separato con 8 porte input e 24 porte output.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
-- Memoria e I/O.
 - Fetch, decoder e `Step`.
 - Istruzioni 8008.
 - Semantica completa di `HLT`, `STOPPED`, interrupt e jam instruction.

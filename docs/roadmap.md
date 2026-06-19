@@ -38,6 +38,8 @@ Contenuto:
 
 ## Milestone 2 - Memoria e I/O
 
+Stato: completata.
+
 Contenuto:
 
 - memoria piatta da 16 KB
@@ -45,6 +47,7 @@ Contenuto:
 - I/O separato dalla memoria
 - 8 porte input
 - 24 porte output
+- test memoria e I/O
 
 ---
 

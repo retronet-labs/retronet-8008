@@ -24,15 +24,17 @@ go run ./cmd/retronet-8008
 
 # Stato attuale
 
-Il progetto e' nella fase di stato CPU base:
+Il progetto ha completato le prime tre basi:
 
 - struttura Go iniziale
 - package `cpu` con stato base dell'Intel 8008
+- memoria piatta da 16 KB
+- I/O separato con 8 porte input e 24 porte output
 - documentazione italiana iniziale
-- nessun decoder e nessuna istruzione implementata
 
-Sono gia' modellati registri, flag, program counter a 14 bit, stack interno e
-reset storico in stato fermo.
+Non esistono ancora decoder o istruzioni eseguibili. Sono gia' modellati
+registri, flag, program counter a 14 bit, stack interno, reset storico in stato
+fermo, memoria diretta e porte I/O.
 
 ---
 
@@ -40,28 +42,34 @@ reset storico in stato fermo.
 
 ```text
 retronet-8008/
-├── go.mod
-├── readme.md
-├── cmd/
-│   └── retronet-8008/
-│       └── main.go
-├── cpu/
-├── docs/
-│   ├── architettura.md
-│   ├── flags.md
-│   ├── registri.md
-│   ├── roadmap.md
-│   └── stack.md
-├── examples/
-│   └── README.md
-├── testdata/
-│   └── README.md
-└── cpu/
-    ├── cpu.go
-    ├── helpers.go
-    ├── opcodes.go
-    ├── cpu_test.go
-    └── helpers_test.go
+|-- go.mod
+|-- readme.md
+|-- cmd/
+|   `-- retronet-8008/
+|       `-- main.go
+|-- cpu/
+|   |-- cpu.go
+|   |-- errors.go
+|   |-- helpers.go
+|   |-- io.go
+|   |-- memory.go
+|   |-- opcodes.go
+|   |-- cpu_test.go
+|   |-- helpers_test.go
+|   |-- io_test.go
+|   `-- memory_test.go
+|-- docs/
+|   |-- architettura.md
+|   |-- flags.md
+|   |-- io.md
+|   |-- memoria.md
+|   |-- registri.md
+|   |-- roadmap.md
+|   `-- stack.md
+|-- examples/
+|   `-- README.md
+`-- testdata/
+    `-- README.md
 ```
 
 Il layout segue volutamente quello di `go-4004`: il package `cpu` resta alla
@@ -73,7 +81,7 @@ radice ed e' importabile da CLI, esempi e test.
 
 1. Bootstrap del progetto. Completato.
 2. Stato CPU base. Completato.
-3. Memoria diretta a 16 KB e I/O separato.
+3. Memoria diretta a 16 KB e I/O separato. Completato.
 4. Fetch, decoder e `Step`.
 5. Famiglie istruzionali, una alla volta, con test e documentazione.
 
@@ -84,5 +92,5 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 # Limiti noti
 
 - La CLI non carica ancora programmi.
-- Non esistono ancora memoria, I/O, decoder o istruzioni.
+- Non esistono ancora decoder o istruzioni.
 - Timing, T-state e interrupt/jam instruction sono rimandati a milestone future.
