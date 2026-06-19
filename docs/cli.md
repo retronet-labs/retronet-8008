@@ -24,6 +24,8 @@ Opzioni:
 - `-rom`: carica una ROM di profilo nel formato `nome=percorso`. Ripetibile.
 - `-input`: inizializza una porta input nel formato `porta=valore`. Ripetibile.
 - `-io-trace`: stampa letture e scritture I/O effettuate tramite callback.
+- `-terminal`: collega un terminale ASCII buffered alle porte `0` e `8`.
+- `-terminal-input`: accoda testo al terminale e abilita `-terminal`.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
 - `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
 - `-trace`: stampa ogni istruzione prima dell'esecuzione.
@@ -138,12 +140,27 @@ richiesto dall'I/O asimmetrico dell'8008.
 
 ---
 
+## Terminale buffered
+
+La stessa ROM puo' ricevere il carattere `Z` dalla coda del terminale e
+ristamparlo su stdout:
+
+```powershell
+go run ./cmd/retronet-8008 -profile scelbi-8b -rom "test=$env:TEMP\io-smoke.bin" -terminal-input Z -steps 8
+```
+
+`-terminal-input` implica `-terminal`. Il terminale e `-io-trace` possono essere
+attivi insieme; il testo raw puo' risultare adiacente alle righe di trace.
+
+---
+
 ## Limiti
 
 - Il formato supportato e' binario raw; non ci sono ancora container ROM.
 - Le mappe storiche ROM/RAM non sono ancora verificate; i profili proteggono
   gli intervalli delle immagini ROM effettivamente caricate.
 - Le porte I/O usano `machine.CallbackIO`; non ci sono ancora periferiche
-  complete.
+  storiche complete.
+- Il terminale e' buffered: non legge ancora dalla console durante il run.
 - Il repository non include ROM storiche: i file devono essere forniti
   localmente dall'utente.

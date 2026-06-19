@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"retronet-8008/cpu"
+	"retronet-8008/machine"
 )
 
 func TestRunLoadsProgramAndPrintsDump(t *testing.T) {
@@ -256,6 +257,38 @@ func TestRunLoadsLocalTestROMWithIOTrace(t *testing.T) {
 		"io in port=0 value=0x5A\n",
 		"io out port=8 value=0x5A\n",
 		"profile=scelbi-8b loaded=0 roms=1 addr=0x0000 pc_start=0x0000 steps=3 limit_reached=false",
+		"A=0x5A",
+	}
+	for _, part := range wantParts {
+		if !strings.Contains(out, part) {
+			t.Fatalf("output missing %q:\n%s", part, out)
+		}
+	}
+}
+
+func TestRunTerminalInputOutputAndIOTrace(t *testing.T) {
+	rom := writeTempProgram(t, []byte{
+		cpu.INP(machine.TerminalInputPort),
+		cpu.OUT(machine.TerminalOutputPort),
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"-profile", "scelbi-8b",
+		"-rom", "test=" + rom,
+		"-terminal-input", "Z",
+		"-io-trace",
+		"-steps", "8",
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	wantParts := []string{
+		"io in port=0 value=0x5A\n",
+		"Zio out port=8 value=0x5A\n",
 		"A=0x5A",
 	}
 	for _, part := range wantParts {

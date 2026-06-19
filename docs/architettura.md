@@ -66,6 +66,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `machine.Profile` descrive profili macchina e slot ROM locali
 - `machine.MemoryBus` applica regioni RAM/ROM e protegge le immagini caricate
 - `machine.CallbackIO` collega il core a callback di input/output per porta
+- `machine.Terminal` fornisce input/output ASCII buffered sulle porte 0/8
 
 ---
 
@@ -93,6 +94,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Metadata di regioni memoria, porte I/O e ROM suggerite.
 - Callback I/O e trace CLI.
 - Bus memoria di profilo con ROM protetta e open bus a `0xFF`.
+- Terminale virtuale buffered componibile con il trace I/O.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---

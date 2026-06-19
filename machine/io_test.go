@@ -71,6 +71,31 @@ func TestCallbackIORejectsInvalidPorts(t *testing.T) {
 	if err := ioBus.OnOutput(7, nil); !errors.Is(err, cpu.ErrInvalidOutputPort) {
 		t.Fatalf("OnOutput invalid = %v, want ErrInvalidOutputPort", err)
 	}
+	if err := ioBus.ObserveInput(8, nil); !errors.Is(err, cpu.ErrInvalidInputPort) {
+		t.Fatalf("ObserveInput invalid = %v, want ErrInvalidInputPort", err)
+	}
+}
+
+func TestCallbackIOObserversSeeCallbackValues(t *testing.T) {
+	ioBus := NewCallbackIO()
+	if err := ioBus.OnInput(0, func(_ byte, value byte) byte { return value + 1 }); err != nil {
+		t.Fatal(err)
+	}
+	var observedInput, observedOutput byte
+	if err := ioBus.ObserveInput(0, func(_ byte, value byte) { observedInput = value }); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioBus.ObserveOutput(8, func(_ byte, value byte) { observedOutput = value }); err != nil {
+		t.Fatal(err)
+	}
+
+	if got := ioBus.Input(0); got != 1 || observedInput != 1 {
+		t.Fatalf("Input = %d observed = %d, want 1, 1", got, observedInput)
+	}
+	ioBus.Output(8, 0xA5)
+	if observedOutput != 0xA5 {
+		t.Fatalf("observed output = 0x%02X, want 0xA5", observedOutput)
+	}
 }
 
 func TestProfileNewIOReturnsCallbackBus(t *testing.T) {

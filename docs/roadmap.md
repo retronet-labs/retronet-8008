@@ -261,9 +261,26 @@ Contenuto:
 
 ---
 
+## Milestone 16 - Terminale virtuale
+
+Stato: completata.
+
+Contenuto:
+
+- `machine.Terminal` buffered e indipendente dal core CPU
+- coda input ASCII sulla porta convenzionale `0`
+- output ASCII verso `io.Writer` dalla porta convenzionale `8`
+- fallback al latch input quando la coda e' vuota
+- osservatori `CallbackIO` componibili con le callback delle periferiche
+- opzioni CLI `-terminal` e `-terminal-input`
+- compatibilita' con `-io-trace`
+- test unitari e ROM echo end-to-end
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare
 - mappe memoria storiche piu' precise per Intellec e SCELBI
-- terminale, front panel, cassette e altre periferiche virtuali
+- front panel, cassette e altre periferiche virtuali
 - timing e T-state

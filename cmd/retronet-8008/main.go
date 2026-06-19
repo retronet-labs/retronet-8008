@@ -15,17 +15,19 @@ import (
 )
 
 type runConfig struct {
-	binPath      string
-	profileName  string
-	listProfiles bool
-	loadAt       uint16
-	startPC      uint16
-	steps        uint64
-	disasm       uint64
-	trace        bool
-	ioTrace      bool
-	roms         romFlags
-	inputs       inputFlags
+	binPath       string
+	profileName   string
+	listProfiles  bool
+	loadAt        uint16
+	startPC       uint16
+	steps         uint64
+	disasm        uint64
+	trace         bool
+	ioTrace       bool
+	terminal      bool
+	terminalInput string
+	roms          romFlags
+	inputs        inputFlags
 }
 
 type romSpec struct {
@@ -137,6 +139,15 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 			return 2
 		}
 	}
+	var terminal *machine.Terminal
+	if cfg.terminal || cfg.terminalInput != "" {
+		terminal = machine.NewTerminal(stdout)
+		terminal.QueueInputString(cfg.terminalInput)
+		if err := terminal.Attach(ports); err != nil {
+			fmt.Fprintf(stderr, "errore terminale: %v\n", err)
+			return 2
+		}
+	}
 	if cfg.ioTrace {
 		if err := registerIOTrace(stdout, ports); err != nil {
 			fmt.Fprintf(stderr, "errore trace I/O: %v\n", err)
@@ -189,6 +200,10 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	}
 	executed, limitReached, err := runSteps(c, mem, ports, cfg.steps, trace)
 	printDump(stdout, c, cfg, loaded, len(cfg.roms), executed, limitReached)
+	if terminal != nil && terminal.Err() != nil {
+		fmt.Fprintf(stderr, "errore output terminale: %v\n", terminal.Err())
+		return 1
+	}
 	if err != nil {
 		fmt.Fprintf(stderr, "errore esecuzione: %v\n", err)
 		return 1
@@ -212,6 +227,8 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	fs.Uint64Var(&cfg.disasm, "disasm", 0, "disassembla N istruzioni e termina senza eseguire")
 	fs.BoolVar(&cfg.trace, "trace", false, "stampa ogni istruzione prima dell'esecuzione")
 	fs.BoolVar(&cfg.ioTrace, "io-trace", false, "stampa letture e scritture I/O tramite callback")
+	fs.BoolVar(&cfg.terminal, "terminal", false, "collega un terminale ASCII alle porte convenzionali 0/8")
+	fs.StringVar(&cfg.terminalInput, "terminal-input", "", "accoda testo ASCII al terminale e abilita -terminal")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
@@ -302,16 +319,15 @@ func printDisassembly(w io.Writer, mem cpu.Memory, pc uint16, count uint64) erro
 func registerIOTrace(w io.Writer, ioBus *machine.CallbackIO) error {
 	for p := byte(0); p <= 7; p++ {
 		port := p
-		if err := ioBus.OnInput(port, func(port byte, value byte) byte {
+		if err := ioBus.ObserveInput(port, func(port byte, value byte) {
 			fmt.Fprintf(w, "io in port=%d value=0x%02X\n", port, value)
-			return value
 		}); err != nil {
 			return err
 		}
 	}
 	for p := byte(8); p <= 31; p++ {
 		port := p
-		if err := ioBus.OnOutput(port, func(port byte, value byte) {
+		if err := ioBus.ObserveOutput(port, func(port byte, value byte) {
 			fmt.Fprintf(w, "io out port=%d value=0x%02X\n", port, value)
 		}); err != nil {
 			return err
