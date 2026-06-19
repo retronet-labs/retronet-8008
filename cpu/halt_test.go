@@ -19,7 +19,7 @@ func TestStepStoppedAfterResetDoesNotFetch(t *testing.T) {
 }
 
 func TestHLTSetsHaltedAndStopped(t *testing.T) {
-	tests := []byte{0x00, 0x01}
+	tests := []byte{0x00, 0x01, 0xFF}
 
 	for _, opcode := range tests {
 		t.Run(Decode(opcode).Mnemonic, func(t *testing.T) {
@@ -50,6 +50,26 @@ func TestHLTSetsHaltedAndStopped(t *testing.T) {
 				t.Fatalf("PC after stopped Step = 0x%04X, want unchanged 0x0001", c.PC)
 			}
 		})
+	}
+}
+
+func TestHLTAlias0xFFDecodesAsHalt(t *testing.T) {
+	op := Decode(0xFF)
+	if op.Mnemonic != "HLT" {
+		t.Fatalf("Decode(0xFF).Mnemonic = %q, want HLT", op.Mnemonic)
+	}
+	if op.Length != 1 {
+		t.Fatalf("Decode(0xFF).Length = %d, want 1", op.Length)
+	}
+
+	mem := NewFlatMemory()
+	mem.Write(0x0000, 0xFF)
+	d, err := Disassemble(mem, 0x0000)
+	if err != nil {
+		t.Fatalf("Disassemble = %v, want nil", err)
+	}
+	if d.Opcode.Mnemonic != "HLT" {
+		t.Fatalf("disasm 0xFF = %q, want HLT (non un move L M,M)", d.Opcode.Mnemonic)
 	}
 }
 

@@ -19,9 +19,6 @@ func buildDecoder() [256]Opcode {
 	for i := range table {
 		code := byte(i)
 		execute := ExecuteFunc(unimplementedExecute)
-		if isHaltOpcode(code) {
-			execute = executeHalt
-		}
 		if isInputOpcode(code) {
 			execute = executeInput
 		}
@@ -51,6 +48,11 @@ func buildDecoder() [256]Opcode {
 		}
 		if isLoadMoveOpcode(code) {
 			execute = executeLoadMove
+		}
+		// HLT va valutato per ultimo: 0xFF e' un alias documentato di HLT e
+		// ricade anche nel pattern load/move (L M,M); l'halt deve prevalere.
+		if isHaltOpcode(code) {
+			execute = executeHalt
 		}
 		table[i] = Opcode{
 			Code:     code,
@@ -92,7 +94,7 @@ func statesFor(code byte) byte {
 	case 3:
 		return 11
 	default:
-		if code == 0x00 || code == 0x01 {
+		if code == 0x00 || code == 0x01 || code == 0xFF {
 			return 4
 		}
 		if code&0xC0 == 0xC0 && (code&0x07 == 0x07 || (code>>3)&0x07 == 0x07) {
@@ -113,7 +115,7 @@ func statesFor(code byte) byte {
 
 func mnemonicFor(code byte) string {
 	switch {
-	case code == 0x00 || code == 0x01:
+	case code == 0x00 || code == 0x01 || code == 0xFF:
 		return "HLT"
 	case code == 0x02:
 		return "RLC"
