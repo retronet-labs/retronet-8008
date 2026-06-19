@@ -130,6 +130,18 @@ func aluImmediateOpcode(group byte) byte {
 	return 0x04 | ((group & 0x07) << 3)
 }
 
+// INP costruisce un input da porta 0..7 verso A.
+func INP(port byte) byte { return 0x41 | ((port & 0x07) << 1) }
+
+// OUT costruisce un output di A verso porta 8..31.
+func OUT(port byte) byte {
+	p := port & 0x1F
+	if p < 8 {
+		p += 8
+	}
+	return 0x41 | (p << 1)
+}
+
 // HLT costruisce l'opcode halt canonico.
 func HLT() byte { return 0x00 }
 

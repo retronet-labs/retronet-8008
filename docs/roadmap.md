@@ -147,9 +147,24 @@ Contenuto:
 
 ---
 
+## Milestone 9 - I/O istruzionale
+
+Stato: completata.
+
+Contenuto:
+
+- `INP` da porte input `0..7` verso `A`
+- `OUT` da `A` verso porte output `8..31`
+- helper mini-assembler `INP(port)` e `OUT(port)`
+- decoder corretto per pattern `0100 MMM1` e `01 RRMMM1`
+- errore `ErrNilIO` per esecuzione senza bus I/O
+- test su flags invariati, jam I/O e mapping completo delle porte
+
+---
+
 ## Milestone successive
 
-Le istruzioni saranno implementate per famiglie:
-
-- input/output
 - CLI con caricamento binario e dump registri
+- disassembler con contesto memoria
+- trace istruzione per istruzione
+- timing e T-state

@@ -61,18 +61,18 @@ l'istruzione senza fetch da memoria.
 - Metadata di lunghezza per istruzioni da 1, 2 e 3 byte.
 - Mnemonici di base per le famiglie note.
 - `Step` con fetch opcode e operandi.
-- Esecuzione reale delle istruzioni load/move, ALU, rotate, control flow e HLT.
+- Esecuzione reale delle istruzioni load/move, ALU, rotate, control flow, HLT e I/O.
 - `Jam` per eseguire una istruzione esterna da stato stopped.
 - Wrap del `PC` a 14 bit.
 - Errore `ErrCPUStopped` quando `Step` viene chiamato a CPU ferma.
+- Errore `ErrNilIO` quando una istruzione I/O non riceve un bus I/O.
 - Errore tipizzato `UnimplementedOpcodeError`.
-- Test su tabella, lunghezze, mnemonici, fetch e PC.
+- Test su tabella, lunghezze, mnemonici, fetch, PC e mapping porte.
 
 ---
 
 ## Da implementare
 
-- Funzioni esecutive reali per I/O.
 - Disassembler con contesto memoria.
 - Trace istruzione per istruzione.
 - Metadata temporali piu' accurati.

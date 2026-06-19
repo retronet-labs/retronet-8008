@@ -90,6 +90,29 @@ func TestLoadOpcodeHelpers(t *testing.T) {
 	}
 }
 
+func TestIOOpcodeHelpers(t *testing.T) {
+	tests := []struct {
+		name string
+		got  byte
+		want byte
+	}{
+		{"INP 0", INP(0), 0x41},
+		{"INP 7", INP(7), 0x4F},
+		{"INP masks", INP(8), 0x41},
+		{"OUT 8", OUT(8), 0x51},
+		{"OUT 16", OUT(16), 0x61},
+		{"OUT 23", OUT(23), 0x6F},
+		{"OUT 31", OUT(31), 0x7F},
+		{"OUT normalizes low ports", OUT(0), 0x51},
+	}
+
+	for _, tt := range tests {
+		if tt.got != tt.want {
+			t.Errorf("%s = 0x%02X, want 0x%02X", tt.name, tt.got, tt.want)
+		}
+	}
+}
+
 func TestALUOpcodeHelpers(t *testing.T) {
 	tests := []struct {
 		name string

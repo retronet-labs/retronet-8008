@@ -22,6 +22,12 @@ func buildDecoder() [256]Opcode {
 		if isHaltOpcode(code) {
 			execute = executeHalt
 		}
+		if isInputOpcode(code) {
+			execute = executeInput
+		}
+		if isOutputOpcode(code) {
+			execute = executeOutput
+		}
 		if isControlFlowOpcode(code) {
 			execute = executeControlFlow
 		}
@@ -95,10 +101,10 @@ func statesFor(code byte) byte {
 		if code&0xC0 == 0x80 && code&0x07 == 0x07 {
 			return 8
 		}
-		if code&0xF0 == 0x40 && code&0x01 == 0x01 {
+		if isInputOpcode(code) {
 			return 8
 		}
-		if code&0xC0 == 0x40 && code&0x10 != 0 && code&0x01 == 0x01 {
+		if isOutputOpcode(code) {
 			return 6
 		}
 		return 5
@@ -143,10 +149,10 @@ func mnemonicFor(code byte) string {
 		return "JMP"
 	case code&0xC7 == 0x46:
 		return "CAL"
-	case code&0xF0 == 0x40 && code&0x01 == 0x01:
-		return fmt.Sprintf("INP %d", (code>>1)&0x07)
-	case code&0xC0 == 0x40 && code&0x10 != 0 && code&0x01 == 0x01:
-		return fmt.Sprintf("OUT %d", ((code>>1)&0x0F)+8)
+	case isInputOpcode(code):
+		return fmt.Sprintf("INP %d", inputPort(code))
+	case isOutputOpcode(code):
+		return fmt.Sprintf("OUT %d", outputPort(code))
 	case code&0xC0 == 0x80:
 		return registerALUMnemonic((code>>3)&0x07, code&0x07)
 	case code&0xC0 == 0xC0:

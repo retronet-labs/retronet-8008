@@ -4,8 +4,8 @@ import "fmt"
 
 // IO e' il bus di input/output separato dalla memoria.
 //
-// L'8008 dispone di 8 porte di input e 24 porte di output. Le istruzioni future
-// useranno i validatori di questo file prima di accedere al bus.
+// L'8008 dispone di 8 porte di input e 24 porte di output. Le istruzioni INP e
+// OUT usano i validatori di questo file prima di accedere al bus.
 type IO interface {
 	Input(port byte) byte
 	Output(port byte, value byte)

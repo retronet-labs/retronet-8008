@@ -31,11 +31,13 @@ Il package `cpu` espone:
 - `IO`, interfaccia con `Input(port byte) byte` e `Output(port byte, value byte)`
 - `Ports`, implementazione semplice con 8 input e 24 output
 - `ValidateInputPort` e `ValidateOutputPort`
-- `ErrInvalidInputPort` e `ErrInvalidOutputPort`
+- `ErrInvalidInputPort`, `ErrInvalidOutputPort` ed `ErrNilIO`
+- helper opcode `INP(port)` e `OUT(port)`
 
-Le funzioni dell'interfaccia restano minimali per il futuro core istruzioni; i
-validatori espliciti permettono invece a test, CLI e decoder di segnalare porte
-non valide quando serve.
+`INP` usa il formato `0100 MMM1`, quindi raggiunge le porte input `0..7`.
+`OUT` usa il formato `01 RRMMM1` con `RR != 00`, quindi raggiunge le porte
+output `8..31`. Il decoder conserva questa asimmetria invece di trattare lo
+spazio come 32 porte bidirezionali.
 
 ---
 
@@ -45,13 +47,17 @@ non valide quando serve.
 - Porte output `8..31`.
 - Validazione esplicita dei range.
 - Lettura/scrittura su implementazione `Ports`.
+- Istruzione `INP`: legge una porta input in `A`.
+- Istruzione `OUT`: scrive `A` su una porta output.
+- Helper `INP` e `OUT`.
+- Errore `ErrNilIO` per istruzioni I/O senza bus.
 - Test sui limiti validi e invalidi.
+- Test sul mapping completo delle 8 porte input e 24 porte output.
 
 ---
 
 ## Da implementare
 
-- Istruzioni `INP` e `OUT`.
 - Callback o periferiche virtuali.
 - Trace I/O.
 - Interazione con una futura CLI runner.

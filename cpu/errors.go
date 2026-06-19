@@ -9,6 +9,9 @@ var (
 	// ErrNilMemory segnala che Step e' stato chiamato senza bus memoria.
 	ErrNilMemory = errors.New("memoria 8008 non inizializzata")
 
+	// ErrNilIO segnala che un'istruzione I/O e' stata eseguita senza bus I/O.
+	ErrNilIO = errors.New("bus I/O 8008 non inizializzato")
+
 	// ErrUnimplementedOpcode segnala un opcode valido nel decoder ma non ancora eseguito.
 	ErrUnimplementedOpcode = errors.New("opcode 8008 non implementato")
 

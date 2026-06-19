@@ -37,6 +37,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - istruzioni rotate dell'accumulatore
 - istruzioni jump, call, return e restart
 - `HLT`, stato `Stopped` e jam instruction esterna
+- istruzioni I/O `INP` e `OUT`
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -64,6 +65,7 @@ retronet-8008/
 |   |-- halt.go
 |   |-- helpers.go
 |   |-- io.go
+|   |-- io_instructions.go
 |   |-- jam.go
 |   |-- load.go
 |   |-- memory.go
@@ -78,6 +80,7 @@ retronet-8008/
 |   |-- halt_test.go
 |   |-- helpers_test.go
 |   |-- io_test.go
+|   |-- io_instructions_test.go
 |   |-- load_test.go
 |   |-- memory_test.go
 |   |-- rotate_test.go
@@ -115,7 +118,8 @@ radice ed e' importabile da CLI, esempi e test.
 7. Rotate. Completato.
 8. Control flow e stack interno. Completato.
 9. HLT, stopped e jam instruction. Completato.
-10. Famiglie istruzionali successive, una alla volta, con test e documentazione.
+10. I/O istruzionale. Completato.
+11. CLI runner e tooling minimo.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -124,5 +128,5 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 # Limiti noti
 
 - La CLI non carica ancora programmi.
-- Load/move, ALU, rotate, control flow e HLT sono implementate; I/O istruzionale manca ancora.
+- Le famiglie istruzionali principali sono implementate a livello funzionale.
 - Timing, T-state e dettagli elettrici dell'interrupt reale sono rimandati a milestone future.

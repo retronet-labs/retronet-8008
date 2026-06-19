@@ -25,6 +25,7 @@ Questo documento descrive il modello generale del core CPU:
 - rotate dell'accumulatore
 - control flow e stack interno
 - halt, stopped e jam instruction esterna
+- istruzioni I/O separate dalla memoria
 
 ---
 
@@ -57,6 +58,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `RLC`, `RRC`, `RAL` e `RAR` costruiscono opcode rotate leggibili
 - `JMP`, `JF`, `JT`, `CAL`, `CF`, `CT`, `RET`, `RF`, `RT` e `RST` costruiscono
   opcode di control flow leggibili
+- `INP` e `OUT` costruiscono opcode I/O leggibili
 
 ---
 
@@ -77,12 +79,12 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Istruzioni rotate dell'accumulatore.
 - Istruzioni jump, call, return e restart con stack interno.
 - `HLT` e alias `0x00`/`0x01`.
+- Istruzioni `INP` e `OUT` su bus I/O separato.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---
 
 ## Da implementare
 
-- Famiglie istruzionali restanti: I/O.
 - Dettagli elettrici e temporali di interrupt e jam instruction reali.
 - Timing e T-state.

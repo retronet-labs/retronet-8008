@@ -277,6 +277,51 @@ corrente resta nello stack interno e l'esecuzione riparte dal vettore `n * 8`.
 
 ---
 
+## Input/Output
+
+Stato: implementato.
+
+Le istruzioni I/O usano il bus separato dalla memoria:
+
+| Istruzione | Helper | Effetto |
+|------------|--------|---------|
+| INP | `INP(port)` | legge la porta input `0..7` in `A` |
+| OUT | `OUT(port)` | scrive `A` sulla porta output `8..31` |
+
+`INP` usa il pattern opcode `0100 MMM1`, dove `MMM` seleziona la porta input.
+`OUT` usa `01 RRMMM1` con `RR != 00`: i cinque bit `RRMMM` selezionano una
+porta output da `8` a `31`.
+
+Entrambe le istruzioni lasciano invariati i flag. Se vengono eseguite senza bus
+I/O, restituiscono `ErrNilIO`.
+
+---
+
+## Esempio
+
+```go
+ports := cpu.NewPorts()
+_ = ports.SetInput(3, 0xA5)
+mem.Write(0x0000, cpu.INP(3))
+mem.Write(0x0001, cpu.OUT(16))
+```
+
+Dopo due `Step`, `A = 0xA5` e la porta output `16` contiene `0xA5`.
+
+---
+
+## Test coperti
+
+- lettura `INP` in accumulatore
+- scrittura `OUT` da accumulatore
+- flags invariati
+- errore `ErrNilIO`
+- esecuzione via `Jam`
+- mapping completo delle 8 porte input e 24 porte output
+- helper opcode
+
+---
+
 ## Da implementare
 
-- I/O instructions.
+- Disassembler e trace istruzione per istruzione.
