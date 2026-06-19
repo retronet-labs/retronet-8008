@@ -82,6 +82,6 @@ con una periferica che produce input o riceve output sulla stessa porta.
 
 ## Da implementare
 
-- Periferiche virtuali complete: front panel e cassette.
+- Periferiche virtuali complete: cassette e interfacce storiche verificate.
 - Mappe I/O storiche verificate per SCELBI e Intellec.
 - Eventuale trace strutturato oltre all'output testuale CLI.

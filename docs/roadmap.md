@@ -278,9 +278,28 @@ Contenuto:
 
 ---
 
+## Milestone 17 - Front panel
+
+Stato: completata.
+
+Contenuto:
+
+- `machine.FrontPanel` sopra CPU, memoria e I/O esistenti
+- switch dati a 8 bit e indirizzo a 14 bit
+- examine e deposit con rispetto della protezione ROM
+- step e run con motivi di arresto distinti
+- richiesta `Stop()` separata dallo stato HLT/stopped della CPU
+- reset, jam instruction e interrupt vettorizzato `RST 0..7`
+- snapshot del pannello e observer pre-istruzione
+- CLI coordinata dal front panel
+- opzioni `-panel`, `-panel-switches` e `-panel-address`
+- test unitari e integrazione CLI
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare
 - mappe memoria storiche piu' precise per Intellec e SCELBI
-- front panel, cassette e altre periferiche virtuali
+- cassette e altre periferiche virtuali
 - timing e T-state

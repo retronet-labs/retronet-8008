@@ -36,6 +36,9 @@ go run ./cmd/retronet-8008 -profile scelbi-8b -rom test=io-smoke.bin -input 0=0x
 
 # accoda input ASCII e collega l'output del terminale
 go run ./cmd/retronet-8008 -profile scelbi-8b -rom test=io-smoke.bin -terminal-input Z -steps 8
+
+# mostra front panel, switch dati e byte memoria selezionato
+go run ./cmd/retronet-8008 -bin programma.bin -panel-switches 0x4B -panel-address 0x0100
 ```
 
 ---
@@ -64,6 +67,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - bus I/O a callback con input configurabile e trace CLI
 - bus memoria mappato con protezione ROM
 - terminale ASCII buffered componibile con il trace I/O
+- front panel con jam, step/run/stop, switch ed examine/deposit
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -86,6 +90,8 @@ retronet-8008/
 |       |-- main.go
 |       `-- main_test.go
 |-- machine/
+|   |-- frontpanel.go
+|   |-- frontpanel_test.go
 |   |-- io.go
 |   |-- io_test.go
 |   |-- memory.go
@@ -132,6 +138,7 @@ retronet-8008/
 |   |-- decoder.md
 |   |-- disassembler.md
 |   |-- flags.md
+|   |-- front-panel.md
 |   |-- io.md
 |   |-- istruzioni.md
 |   |-- memoria.md
@@ -170,7 +177,8 @@ radice ed e' importabile da CLI, esempi e test.
 15. Profili SCELBI/Intellec concreti e I/O callback. Completato.
 16. Bus memoria mappato e protezione ROM. Completato.
 17. Terminale virtuale buffered. Completato.
-18. Front panel, ROM storiche verificate, timing e T-state.
+18. Front panel e coordinamento esecuzione. Completato.
+19. Mappe/ROM storiche verificate, periferiche, timing e T-state.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 

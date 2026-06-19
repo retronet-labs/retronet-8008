@@ -26,6 +26,10 @@ type runConfig struct {
 	ioTrace       bool
 	terminal      bool
 	terminalInput string
+	panel         bool
+	panelSwitches byte
+	panelInputSet bool
+	panelAddress  uint16
 	roms          romFlags
 	inputs        inputFlags
 }
@@ -139,6 +143,20 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 			return 2
 		}
 	}
+	if cfg.panelInputSet {
+		if err := ports.SetInput(machine.TerminalInputPort, cfg.panelSwitches); err != nil {
+			fmt.Fprintf(stderr, "errore switch front panel: %v\n", err)
+			return 2
+		}
+	}
+	panel, err := machine.NewFrontPanel(c, mem, ports)
+	if err != nil {
+		fmt.Fprintf(stderr, "errore front panel: %v\n", err)
+		return 2
+	}
+	panel.SetSwitches(cfg.panelSwitches)
+	panel.SetAddress(cfg.panelAddress)
+
 	var terminal *machine.Terminal
 	if cfg.terminal || cfg.terminalInput != "" {
 		terminal = machine.NewTerminal(stdout)
@@ -186,10 +204,13 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 			fmt.Fprintf(stderr, "errore disassembly: %v\n", err)
 			return 1
 		}
+		if cfg.panel {
+			printPanel(stdout, panel.Snapshot())
+		}
 		return 0
 	}
 
-	if err := c.Jam(mem, ports, cpu.JMP(), byte(cfg.startPC), byte(cfg.startPC>>8)); err != nil {
+	if err := panel.Jam(cpu.JMP(), byte(cfg.startPC), byte(cfg.startPC>>8)); err != nil {
 		fmt.Fprintf(stderr, "errore avvio CPU: %v\n", err)
 		return 1
 	}
@@ -198,8 +219,11 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	if cfg.trace {
 		trace = stdout
 	}
-	executed, limitReached, err := runSteps(c, mem, ports, cfg.steps, trace)
+	executed, limitReached, err := runSteps(panel, mem, cfg.steps, trace)
 	printDump(stdout, c, cfg, loaded, len(cfg.roms), executed, limitReached)
+	if cfg.panel {
+		printPanel(stdout, panel.Snapshot())
+	}
 	if terminal != nil && terminal.Err() != nil {
 		fmt.Fprintf(stderr, "errore output terminale: %v\n", terminal.Err())
 		return 1
@@ -218,6 +242,8 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	var cfg runConfig
 	loadAt := fs.String("addr", "0x0000", "indirizzo di caricamento, decimale o 0xHEX")
 	startPC := fs.String("pc", "", "program counter iniziale, default uguale ad -addr")
+	panelSwitches := fs.String("panel-switches", "", "valore degli switch dati, decimale o 0xHEX")
+	panelAddress := fs.String("panel-address", "", "indirizzo esaminato dal pannello, default uguale al PC iniziale")
 	fs.StringVar(&cfg.binPath, "bin", "", "percorso del binario da caricare")
 	fs.StringVar(&cfg.profileName, "profile", "generic", "profilo macchina da usare")
 	fs.BoolVar(&cfg.listProfiles, "profiles", false, "elenca i profili macchina disponibili")
@@ -229,6 +255,7 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	fs.BoolVar(&cfg.ioTrace, "io-trace", false, "stampa letture e scritture I/O tramite callback")
 	fs.BoolVar(&cfg.terminal, "terminal", false, "collega un terminale ASCII alle porte convenzionali 0/8")
 	fs.StringVar(&cfg.terminalInput, "terminal-input", "", "accoda testo ASCII al terminale e abilita -terminal")
+	fs.BoolVar(&cfg.panel, "panel", false, "stampa lo stato del front panel dopo l'esecuzione")
 
 	if err := fs.Parse(args); err != nil {
 		return cfg, err
@@ -249,13 +276,33 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 
 	if *startPC == "" {
 		cfg.startPC = cfg.loadAt
-		return cfg, nil
+	} else {
+		pc, err := parseAddress(*startPC)
+		if err != nil {
+			return cfg, fmt.Errorf("pc non valido: %w", err)
+		}
+		cfg.startPC = pc
 	}
-	pc, err := parseAddress(*startPC)
-	if err != nil {
-		return cfg, fmt.Errorf("pc non valido: %w", err)
+
+	if *panelAddress == "" {
+		cfg.panelAddress = cfg.startPC
+	} else {
+		addr, err := parseAddress(*panelAddress)
+		if err != nil {
+			return cfg, fmt.Errorf("panel-address non valido: %w", err)
+		}
+		cfg.panelAddress = addr
+		cfg.panel = true
 	}
-	cfg.startPC = pc
+	if *panelSwitches != "" {
+		value, err := parseByte(*panelSwitches)
+		if err != nil {
+			return cfg, fmt.Errorf("panel-switches non valido: %w", err)
+		}
+		cfg.panelSwitches = value
+		cfg.panelInputSet = true
+		cfg.panel = true
+	}
 	return cfg, nil
 }
 
@@ -279,29 +326,28 @@ func parsePort(value string) (byte, error) {
 	return byte(n), nil
 }
 
-func runSteps(c *cpu.CPU8008, mem cpu.Memory, ioBus cpu.IO, limit uint64, trace io.Writer) (uint64, bool, error) {
-	var executed uint64
-	for executed < limit {
-		if c.Halted || c.Stopped {
-			return executed, false, nil
-		}
-		if trace != nil {
-			d, err := cpu.Disassemble(mem, c.PC)
-			if err != nil {
-				return executed, false, err
-			}
-			fmt.Fprintf(trace, "trace=%d %s\n", executed, d.String())
-		}
-		err := c.Step(mem, ioBus)
-		if err != nil {
-			if errors.Is(err, cpu.ErrCPUStopped) {
-				return executed, false, nil
-			}
-			return executed, false, err
-		}
-		executed++
+func parseByte(value string) (byte, error) {
+	n, err := strconv.ParseUint(strings.TrimSpace(value), 0, 8)
+	if err != nil {
+		return 0, err
 	}
-	return executed, !(c.Halted || c.Stopped), nil
+	return byte(n), nil
+}
+
+func runSteps(panel *machine.FrontPanel, mem cpu.Memory, limit uint64, trace io.Writer) (uint64, bool, error) {
+	var observer machine.PanelStepObserver
+	if trace != nil {
+		observer = func(step uint64, state cpu.CPU8008) error {
+			d, err := cpu.Disassemble(mem, state.PC)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(trace, "trace=%d %s\n", step, d.String())
+			return nil
+		}
+	}
+	result, err := panel.Run(limit, observer)
+	return result.Steps, result.Reason == machine.PanelStoppedByLimit, err
 }
 
 func printDisassembly(w io.Writer, mem cpu.Memory, pc uint16, count uint64) error {
@@ -375,6 +421,11 @@ func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, roms int,
 	fmt.Fprintf(w, "PC=0x%04X SP=%d Halted=%v Stopped=%v\n", c.PC, c.SP, c.Halted, c.Stopped)
 	fmt.Fprintf(w, "Flags C=%v Z=%v S=%v P=%v\n", c.Carry, c.Zero, c.Sign, c.Parity)
 	fmt.Fprintf(w, "Stack=%s\n", formatStack(c.Stack))
+}
+
+func printPanel(w io.Writer, state machine.FrontPanelState) {
+	fmt.Fprintf(w, "panel address=0x%04X data=0x%02X switches=0x%02X running=%v stop_requested=%v\n",
+		state.Address, state.Data, state.Switches, state.Running, state.StopRequested)
 }
 
 func formatStack(stack [8]uint16) string {

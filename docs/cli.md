@@ -26,6 +26,9 @@ Opzioni:
 - `-io-trace`: stampa letture e scritture I/O effettuate tramite callback.
 - `-terminal`: collega un terminale ASCII buffered alle porte `0` e `8`.
 - `-terminal-input`: accoda testo al terminale e abilita `-terminal`.
+- `-panel`: stampa lo snapshot del front panel dopo il run.
+- `-panel-switches`: imposta gli switch dati e il latch input `0`.
+- `-panel-address`: seleziona l'indirizzo esaminato dal pannello.
 - `-steps`: numero massimo di istruzioni da eseguire. Default `1000`.
 - `-disasm`: disassembla N istruzioni dal PC iniziale e termina senza eseguire.
 - `-trace`: stampa ogni istruzione prima dell'esecuzione.
@@ -151,6 +154,21 @@ go run ./cmd/retronet-8008 -profile scelbi-8b -rom "test=$env:TEMP\io-smoke.bin"
 
 `-terminal-input` implica `-terminal`. Il terminale e `-io-trace` possono essere
 attivi insieme; il testo raw puo' risultare adiacente alle righe di trace.
+
+---
+
+## Front panel
+
+La CLI usa sempre `machine.FrontPanel` per jam iniziale e ciclo di esecuzione.
+Lo snapshot e' opzionale:
+
+```powershell
+go run ./cmd/retronet-8008 -bin programma.bin -panel -panel-switches 0x4B -panel-address 0x0100
+```
+
+Gli switch alimentano la porta input convenzionale `0`; un eventuale
+`-input 0=...` precedente viene sostituito. L'indirizzo del pannello serve solo
+per la lettura mostrata e non modifica il PC.
 
 ---
 

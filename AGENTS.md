@@ -12,7 +12,7 @@ dipendere da una macchina storica specifica.
 
 ## Stato
 
-Sono completate le milestone 0-16:
+Sono completate le milestone 0-17:
 
 - core CPU, decoder e famiglie istruzionali 8008
 - memoria e I/O separati
@@ -22,6 +22,7 @@ Sono completate le milestone 0-16:
 - callback I/O e smoke ROM locale
 - bus memoria mappato con ROM protetta
 - terminale ASCII buffered sulle porte convenzionali `0` e `8`
+- front panel con step/run/stop, jam/RST, switch, examine e deposit
 
 La roadmap dettagliata e' in `docs/roadmap.md`.
 
@@ -49,6 +50,8 @@ package testato, senza una directory `tests/` separata.
 - Le porte callback input `0` e output `8` sono convenzioni dell'emulatore, non
   mappe SCELBI/Intellec storicamente verificate.
 - Gli osservatori I/O non devono sostituire le callback delle periferiche.
+- `FrontPanel.Stop` arresta il loop esterno senza impostare artificialmente i
+  flag CPU `Halted` o `Stopped`.
 - Non aggiungere ROM storiche senza provenienza e licenza documentate.
 
 ## Verifica
@@ -73,7 +76,7 @@ Prima di un commit eseguire anche `gofmt` sui file Go modificati e
 
 Ordine consigliato:
 
-1. front panel con step, run, stop e jam/interrupt
-2. mappe memoria e I/O storiche verificate
-3. cassette e altre periferiche SCELBI/Intellec
-4. timing e T-state
+1. mappe memoria e I/O storiche verificate
+2. cassette e altre periferiche SCELBI/Intellec
+3. timing e T-state
+4. suite di conformance contro riferimenti indipendenti

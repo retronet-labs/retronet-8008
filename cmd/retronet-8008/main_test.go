@@ -298,6 +298,35 @@ func TestRunTerminalInputOutputAndIOTrace(t *testing.T) {
 	}
 }
 
+func TestRunFrontPanelSnapshotAndSwitchInput(t *testing.T) {
+	bin := writeTempProgram(t, []byte{
+		cpu.INP(machine.TerminalInputPort),
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"-bin", bin,
+		"-panel-switches", "0x4B",
+		"-panel-address", "0x0001",
+		"-steps", "8",
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	out := stdout.String()
+	wantParts := []string{
+		"A=0x4B",
+		"panel address=0x0001 data=0x00 switches=0x4B running=false stop_requested=false",
+	}
+	for _, part := range wantParts {
+		if !strings.Contains(out, part) {
+			t.Fatalf("output missing %q:\n%s", part, out)
+		}
+	}
+}
+
 func TestRunRejectsUnknownProfile(t *testing.T) {
 	bin := writeTempProgram(t, []byte{cpu.HLT()})
 	var stdout, stderr bytes.Buffer
