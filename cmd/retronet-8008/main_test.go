@@ -302,6 +302,68 @@ func TestRunTerminalInputOutputAndIOTrace(t *testing.T) {
 	}
 }
 
+func TestRunTerminalOnConfiguredPorts(t *testing.T) {
+	rom := writeTempProgram(t, []byte{
+		cpu.INP(2),
+		cpu.OUT(10),
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"-profile", "scelbi-8b",
+		"-rom", "test=" + rom,
+		"-terminal-input", "Q",
+		"-terminal-in-port", "2",
+		"-terminal-out-port", "10",
+		"-steps", "8",
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "Qprofile=") || !strings.Contains(stdout.String(), "A=0x51") {
+		t.Fatalf("output = %s, want terminal Q and A=0x51", stdout.String())
+	}
+}
+
+func TestRunGenericLoopbackPeripheral(t *testing.T) {
+	bin := writeTempProgram(t, []byte{
+		cpu.LI(cpu.RegA), 0x5A,
+		cpu.OUT(9),
+		cpu.INP(1),
+		cpu.HLT(),
+	})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{"-bin", bin, "-loopback", "1=9", "-steps", "8"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("run exit = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "A=0x5A") {
+		t.Fatalf("output = %s", stdout.String())
+	}
+}
+
+func TestRunRejectsPeripheralPortConflict(t *testing.T) {
+	bin := writeTempProgram(t, []byte{cpu.HLT()})
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"-bin", bin,
+		"-terminal",
+		"-loopback", "0=8",
+	}, &stdout, &stderr)
+
+	if code != 2 {
+		t.Fatalf("run exit = %d, want 2", code)
+	}
+	if !strings.Contains(stderr.String(), "porta I/O gia' assegnata") {
+		t.Fatalf("stderr = %s", stderr.String())
+	}
+}
+
 func TestRunFrontPanelSnapshotAndSwitchInput(t *testing.T) {
 	bin := writeTempProgram(t, []byte{
 		cpu.INP(machine.TerminalInputPort),

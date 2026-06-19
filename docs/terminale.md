@@ -8,13 +8,14 @@ core CPU.
 
 ## Porte
 
-Il terminale usa le convenzioni correnti dei profili:
+Per impostazione predefinita il terminale usa le convenzioni correnti:
 
 - input `0`: un byte viene consumato dalla coda quando la CPU esegue `INP 0`
 - output `8`: il byte scritto con `OUT 8` viene inoltrato a un `io.Writer`
 
-Queste porte non sono dichiarate come mappa storica SCELBI o Intellec. Potranno
-essere rese configurabili quando saranno disponibili schemi verificati.
+Queste porte non sono dichiarate come mappa storica SCELBI o Intellec.
+`TerminalConfig` e le opzioni CLI permettono gia' di scegliere porte diverse,
+ma anche tali scelte restano configurazioni emulative.
 
 Quando la coda input e' vuota, il terminale restituisce il valore latched della
 porta. Questo rende il comportamento deterministico e permette di combinare il
@@ -36,6 +37,8 @@ API principali:
 
 - `NewTerminal(output)`: crea la periferica; `nil` scarta l'output
 - `Attach(ioBus)`: collega input `0` e output `8`
+- `AttachPorts(ioBus, config)`: collega direttamente porte configurabili
+- `AttachPeripheral(bus, name, config)`: usa ownership e conflitti espliciti
 - `QueueInput(data)` e `QueueInputString(value)`: accodano byte
 - `PendingInput()`: restituisce i byte non ancora consumati
 - `Err()`: conserva il primo errore del writer
@@ -59,6 +62,8 @@ La ROM esegue `INP 0`, `OUT 8`, `HLT`, quindi stampa `Z` prima del dump CPU.
 `-io-trace` puo' essere usato insieme al terminale: gli osservatori di trace non
 sostituiscono le callback della periferica. Poiche' entrambi scrivono su stdout,
 l'output ASCII e le righe di trace possono apparire adiacenti.
+
+`-terminal-in-port` e `-terminal-out-port` sostituiscono le porte predefinite.
 
 ---
 

@@ -72,6 +72,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - READY/WAIT per ciclo macchina e interrupt sincronizzato
 - trace JSON e debugger con breakpoint/watchpoint
 - conformance sintetica e verifica SHA-256 di ROM locali
+- periferiche configurabili con ownership e loopback generico
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -109,6 +110,8 @@ retronet-8008/
 |   |-- memory_test.go
 |   |-- observable_memory.go
 |   |-- observable_memory_test.go
+|   |-- peripheral.go
+|   |-- peripheral_test.go
 |   |-- profile.go
 |   |-- profile_test.go
 |   |-- terminal.go
@@ -158,6 +161,7 @@ retronet-8008/
 |   |-- io.md
 |   |-- istruzioni.md
 |   |-- memoria.md
+|   |-- periferiche.md
 |   |-- profili.md
 |   |-- registri.md
 |   |-- roadmap.md
@@ -200,7 +204,7 @@ radice ed e' importabile da CLI, esempi e test.
 21. READY e interrupt al confine PCI. Completato.
 22. Trace strutturato e debugger. Completato.
 23. Conformance sintetica e verifica ROM locale. Completato.
-24. Periferiche generiche configurabili.
+24. Periferiche generiche configurabili. Completato.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 

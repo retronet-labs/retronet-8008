@@ -371,9 +371,26 @@ Contenuto:
 
 ---
 
+## Milestone 24 - Periferiche generiche configurabili
+
+Stato: completata. Non assume mappe storiche.
+
+Contenuto:
+
+- `PeripheralBus` sopra `CallbackIO`
+- binding atomici con ownership e conflitti espliciti
+- validazione completa prima dell'attach
+- detach e lista ordinata delle porte assegnate
+- `TerminalConfig` con porte input/output configurabili
+- `RegisterPeripheral` loopback a 8 bit
+- opzioni CLI `-terminal-in-port`, `-terminal-out-port` e `-loopback`
+- compatibilita' con osservatori trace/debugger
+- test package e integrazione CLI
+
+---
+
 ## Milestone successive
 
-- ROM storiche reali, solo quando provenance e licenze saranno chiare
-- mappe memoria storiche piu' precise per Intellec e SCELBI
-- cassette e altre periferiche virtuali
-- periferiche generiche configurabili
+- milestone 18: mappe memoria/I/O storiche, quando le fonti saranno sufficienti
+- milestone 19: ROM storiche, solo con provenienza e licenza chiare
+- cassette e altre periferiche storiche dopo la verifica di schemi e protocolli

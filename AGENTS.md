@@ -12,7 +12,7 @@ dipendere da una macchina storica specifica.
 
 ## Stato
 
-Sono completate le milestone 0-17 e le milestone 20-23:
+Sono completate le milestone 0-17 e le milestone 20-24:
 
 - core CPU, decoder e famiglie istruzionali 8008
 - memoria e I/O separati
@@ -27,6 +27,7 @@ Sono completate le milestone 0-17 e le milestone 20-23:
 - READY/WAIT per ciclo e interrupt jammed al prossimo confine PCI
 - trace JSON e debugger con breakpoint/watchpoint
 - suite conformance sintetica e verifica ROM locale size/SHA-256
+- bus periferiche configurabile, terminale su porte arbitrarie e loopback
 
 La roadmap dettagliata e' in `docs/roadmap.md`.
 
@@ -63,6 +64,8 @@ package testato, senza una directory `tests/` separata.
 - I loader attraverso `ObservableMemory` non devono emettere eventi runtime.
 - Breakpoint PC/opcode fermano prima; watchpoint memoria/I/O fermano dopo.
 - Un hash ROM identifica i byte ma non concede diritti di redistribuzione.
+- Le periferiche possiedono porte; trace e debugger sono solo osservatori.
+- Non implementare device storici senza mappe e protocolli verificati.
 - Non aggiungere ROM storiche senza provenienza e licenza documentate.
 
 ## Verifica
@@ -87,4 +90,5 @@ Prima di un commit eseguire anche `gofmt` sui file Go modificati e
 
 Ordine consigliato:
 
-1. periferiche generiche configurabili
+1. milestone 18: mappe storiche, quando saranno disponibili fonti sufficienti
+2. milestone 19: ROM storiche, solo con provenienza e licenza

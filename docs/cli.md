@@ -26,6 +26,8 @@ Opzioni:
 - `-io-trace`: stampa letture e scritture I/O effettuate tramite callback.
 - `-terminal`: collega un terminale ASCII buffered alle porte `0` e `8`.
 - `-terminal-input`: accoda testo al terminale e abilita `-terminal`.
+- `-terminal-in-port`, `-terminal-out-port`: porte terminale configurabili.
+- `-loopback`: registro generico nel formato `input=output`; ripetibile.
 - `-panel`: stampa lo snapshot del front panel dopo il run.
 - `-panel-switches`: imposta gli switch dati e il latch input `0`.
 - `-panel-address`: seleziona l'indirizzo esaminato dal pannello.
@@ -164,6 +166,9 @@ go run ./cmd/retronet-8008 -profile scelbi-8b -rom "test=$env:TEMP\io-smoke.bin"
 
 `-terminal-input` implica `-terminal`. Il terminale e `-io-trace` possono essere
 attivi insieme; il testo raw puo' risultare adiacente alle righe di trace.
+
+Le porte predefinite sono `0` e `8`. I binding `-loopback` e terminale hanno
+ownership esclusiva: una collisione viene rifiutata prima del run.
 
 ---
 

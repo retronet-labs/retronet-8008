@@ -12,6 +12,14 @@ const (
 	TerminalOutputPort byte = 8
 )
 
+// TerminalConfig permette di usare porte emulative diverse dalla convenzione.
+type TerminalConfig struct {
+	InputPort  byte
+	OutputPort byte
+}
+
+var DefaultTerminalConfig = TerminalConfig{InputPort: TerminalInputPort, OutputPort: TerminalOutputPort}
+
 // Terminal e' una periferica ASCII buffered collegabile a CallbackIO.
 // Quando la coda input e' vuota restituisce il valore latched della porta.
 type Terminal struct {
@@ -32,13 +40,36 @@ func NewTerminal(output io.Writer) *Terminal {
 
 // Attach collega il terminale alle porte convenzionali input 0 e output 8.
 func (t *Terminal) Attach(ioBus *CallbackIO) error {
+	return t.AttachPorts(ioBus, DefaultTerminalConfig)
+}
+
+// AttachPorts collega direttamente il terminale alle porte indicate.
+func (t *Terminal) AttachPorts(ioBus *CallbackIO, config TerminalConfig) error {
 	if ioBus == nil {
 		return cpu.ErrNilIO
 	}
-	if err := ioBus.OnInput(TerminalInputPort, t.readInput); err != nil {
+	if err := cpu.ValidateInputPort(config.InputPort); err != nil {
 		return err
 	}
-	return ioBus.OnOutput(TerminalOutputPort, t.writeOutput)
+	if err := cpu.ValidateOutputPort(config.OutputPort); err != nil {
+		return err
+	}
+	if err := ioBus.OnInput(config.InputPort, t.readInput); err != nil {
+		return err
+	}
+	return ioBus.OnOutput(config.OutputPort, t.writeOutput)
+}
+
+// AttachPeripheral collega il terminale con ownership e conflitti espliciti.
+func (t *Terminal) AttachPeripheral(bus *PeripheralBus, name string, config TerminalConfig) error {
+	if bus == nil {
+		return cpu.ErrNilIO
+	}
+	return bus.Attach(PeripheralBinding{
+		Name:    name,
+		Inputs:  []PeripheralInput{{Port: config.InputPort, Handler: t.readInput}},
+		Outputs: []PeripheralOutput{{Port: config.OutputPort, Handler: t.writeOutput}},
+	})
 }
 
 // QueueInput accoda una copia dei byte che verranno consumati da INP 0.

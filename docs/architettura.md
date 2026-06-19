@@ -102,6 +102,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - READY per ciclo macchina e interrupt sincronizzato al confine PCI.
 - Debugger strutturato con eventi CPU, memoria, I/O, timing e WAIT.
 - Conformance sintetica isolata e verifica hash per ROM locali opzionali.
+- Bus periferiche configurabile con ownership e conflitti di porta.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---

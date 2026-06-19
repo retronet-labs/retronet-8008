@@ -68,6 +68,28 @@ func TestTerminalRejectsNilBus(t *testing.T) {
 	}
 }
 
+func TestTerminalAttachesToConfigurablePeripheralPorts(t *testing.T) {
+	var output bytes.Buffer
+	ioBus := NewCallbackIO()
+	bus, err := NewPeripheralBus(ioBus)
+	if err != nil {
+		t.Fatal(err)
+	}
+	terminal := NewTerminal(&output)
+	terminal.QueueInputString("Q")
+	if err := terminal.AttachPeripheral(bus, "terminal", TerminalConfig{InputPort: 2, OutputPort: 10}); err != nil {
+		t.Fatal(err)
+	}
+
+	if got := ioBus.Input(2); got != 'Q' {
+		t.Fatalf("Input(2) = %q, want Q", got)
+	}
+	ioBus.Output(10, '!')
+	if got := output.String(); got != "!" {
+		t.Fatalf("output = %q, want !", got)
+	}
+}
+
 type errorWriter struct {
 	err error
 }

@@ -77,11 +77,13 @@ con una periferica che produce input o riceve output sulla stessa porta.
 - Test di integrazione con ROM locale `INP 0`, `OUT 8`, `HLT`.
 - Terminale ASCII buffered sulle porte convenzionali `0` e `8`.
 - Osservatori I/O componibili usati dal trace.
+- Binding periferiche con ownership, conflitti e detach.
+- Terminale configurabile e registro loopback generico.
 
 ---
 
 ## Da implementare
 
-- Periferiche virtuali complete: cassette e interfacce storiche verificate.
+- Periferiche storiche complete: cassette e interfacce verificate.
 - Mappe I/O storiche verificate per SCELBI e Intellec.
 - Eventuale trace strutturato oltre all'output testuale CLI.

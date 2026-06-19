@@ -28,6 +28,9 @@ type runConfig struct {
 	ioTrace       bool
 	terminal      bool
 	terminalInput string
+	terminalIn    byte
+	terminalOut   byte
+	loopbacks     loopbackFlags
 	panel         bool
 	panelSwitches byte
 	panelInputSet bool
@@ -128,6 +131,44 @@ func (b *byteFlags) String() string {
 	return strings.Join(parts, ",")
 }
 
+type loopbackSpec struct {
+	input  byte
+	output byte
+}
+
+type loopbackFlags []loopbackSpec
+
+func (l *loopbackFlags) String() string {
+	parts := make([]string, len(*l))
+	for i, spec := range *l {
+		parts[i] = fmt.Sprintf("%d=%d", spec.input, spec.output)
+	}
+	return strings.Join(parts, ",")
+}
+
+func (l *loopbackFlags) Set(value string) error {
+	inputText, outputText, ok := strings.Cut(value, "=")
+	if !ok {
+		return errors.New("usa input=output")
+	}
+	input, err := parsePort(inputText)
+	if err != nil {
+		return err
+	}
+	if err := cpu.ValidateInputPort(input); err != nil {
+		return err
+	}
+	output, err := parsePort(outputText)
+	if err != nil {
+		return err
+	}
+	if err := cpu.ValidateOutputPort(output); err != nil {
+		return err
+	}
+	*l = append(*l, loopbackSpec{input: input, output: output})
+	return nil
+}
+
 func (b *byteFlags) Set(value string) error {
 	parsed, err := parseByte(value)
 	if err != nil {
@@ -200,6 +241,11 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		return 2
 	}
 	ports := profile.NewIO()
+	peripherals, err := machine.NewPeripheralBus(ports)
+	if err != nil {
+		fmt.Fprintf(stderr, "errore bus periferiche: %v\n", err)
+		return 2
+	}
 
 	for _, spec := range cfg.inputs {
 		if err := ports.SetInput(spec.port, spec.value); err != nil {
@@ -226,8 +272,17 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	if cfg.terminal || cfg.terminalInput != "" {
 		terminal = machine.NewTerminal(stdout)
 		terminal.QueueInputString(cfg.terminalInput)
-		if err := terminal.Attach(ports); err != nil {
+		if err := terminal.AttachPeripheral(peripherals, "terminal", machine.TerminalConfig{
+			InputPort: cfg.terminalIn, OutputPort: cfg.terminalOut,
+		}); err != nil {
 			fmt.Fprintf(stderr, "errore terminale: %v\n", err)
+			return 2
+		}
+	}
+	for i, spec := range cfg.loopbacks {
+		register := machine.NewRegisterPeripheral(0)
+		if err := register.Attach(peripherals, fmt.Sprintf("loopback-%d", i), spec.input, spec.output); err != nil {
+			fmt.Fprintf(stderr, "errore loopback I/O: %v\n", err)
 			return 2
 		}
 	}
@@ -345,6 +400,8 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	panelSwitches := fs.String("panel-switches", "", "valore degli switch dati, decimale o 0xHEX")
 	panelAddress := fs.String("panel-address", "", "indirizzo esaminato dal pannello, default uguale al PC iniziale")
 	interruptRST := fs.String("interrupt-rst", "", "forza RST 0..7 prima del primo fetch")
+	terminalIn := fs.Uint("terminal-in-port", uint(machine.TerminalInputPort), "porta input del terminale")
+	terminalOut := fs.Uint("terminal-out-port", uint(machine.TerminalOutputPort), "porta output del terminale")
 	fs.StringVar(&cfg.binPath, "bin", "", "percorso del binario da caricare")
 	fs.StringVar(&cfg.profileName, "profile", "generic", "profilo macchina da usare")
 	fs.BoolVar(&cfg.listProfiles, "profiles", false, "elenca i profili macchina disponibili")
@@ -356,6 +413,7 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	fs.BoolVar(&cfg.ioTrace, "io-trace", false, "stampa letture e scritture I/O tramite callback")
 	fs.BoolVar(&cfg.terminal, "terminal", false, "collega un terminale ASCII alle porte convenzionali 0/8")
 	fs.StringVar(&cfg.terminalInput, "terminal-input", "", "accoda testo ASCII al terminale e abilita -terminal")
+	fs.Var(&cfg.loopbacks, "loopback", "registro I/O generico input=output; ripetibile")
 	fs.BoolVar(&cfg.panel, "panel", false, "stampa lo stato del front panel dopo l'esecuzione")
 	fs.BoolVar(&cfg.ready, "ready", true, "livello READY globale; false ferma il run in WAIT")
 	fs.StringVar(&cfg.traceJSONPath, "trace-json", "", "scrive eventi JSON Lines nel file indicato")
@@ -374,6 +432,17 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	}
 	if cfg.listProfiles {
 		return cfg, nil
+	}
+	if *terminalIn > 0xFF || *terminalOut > 0xFF {
+		return cfg, errors.New("porta terminale fuori range")
+	}
+	cfg.terminalIn = byte(*terminalIn)
+	cfg.terminalOut = byte(*terminalOut)
+	if err := cpu.ValidateInputPort(cfg.terminalIn); err != nil {
+		return cfg, err
+	}
+	if err := cpu.ValidateOutputPort(cfg.terminalOut); err != nil {
+		return cfg, err
 	}
 	if cfg.conformance || cfg.verifyROMPath != "" {
 		return cfg, nil
