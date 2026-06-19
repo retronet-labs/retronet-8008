@@ -68,6 +68,7 @@ Il progetto ha completato le prime milestone fondamentali:
 - bus memoria mappato con protezione ROM
 - terminale ASCII buffered componibile con il trace I/O
 - front panel con jam, step/run/stop, switch ed examine/deposit
+- timing Intel con cicli macchina e contatori cumulativi
 - documentazione italiana iniziale
 
 Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
@@ -146,7 +147,8 @@ retronet-8008/
 |   |-- registri.md
 |   |-- roadmap.md
 |   |-- stack.md
-|   `-- terminale.md
+|   |-- terminale.md
+|   `-- timing.md
 |-- examples/
 |   `-- README.md
 `-- testdata/
@@ -178,7 +180,9 @@ radice ed e' importabile da CLI, esempi e test.
 16. Bus memoria mappato e protezione ROM. Completato.
 17. Terminale virtuale buffered. Completato.
 18. Front panel e coordinamento esecuzione. Completato.
-19. Mappe/ROM storiche verificate, periferiche, timing e T-state.
+19. Mappe e ROM storiche verificate. Rinviato in attesa delle fonti.
+20. Timing Intel e cicli macchina. Completato.
+21. READY, interrupt, debugger, conformance e periferiche generiche.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 

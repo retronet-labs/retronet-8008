@@ -27,11 +27,40 @@ func (c *CPU8008) Step(mem Memory, io IO) error {
 		inst.OperandCount++
 	}
 
-	return op.Execute(c, mem, io, inst)
+	timing := c.instructionTiming(op)
+	if err := op.Execute(c, mem, io, inst); err != nil {
+		return err
+	}
+	c.recordTiming(timing)
+	return nil
 }
 
 func (c *CPU8008) fetch(mem Memory) byte {
 	value := mem.Read(c.PC)
 	c.setPC(c.PC + 1)
 	return value
+}
+
+func (c *CPU8008) instructionTiming(op Opcode) InstructionTiming {
+	timing := InstructionTiming{
+		States:     op.States,
+		CycleCount: op.CycleCount,
+		Cycles:     op.Cycles,
+		Taken:      true,
+	}
+	code := op.Code
+	if code&0xC7 == 0x40 || code&0xC7 == 0x42 || code&0xC7 == 0x03 {
+		timing.Conditional = true
+		timing.Taken = c.conditionTaken(code)
+		if !timing.Taken {
+			timing.States = op.MinStates
+		}
+	}
+	return timing
+}
+
+func (c *CPU8008) recordTiming(timing InstructionTiming) {
+	c.InstructionCount++
+	c.StateCount += uint64(timing.States)
+	c.LastTiming = timing
 }

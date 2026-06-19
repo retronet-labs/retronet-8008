@@ -68,6 +68,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - `machine.CallbackIO` collega il core a callback di input/output per porta
 - `machine.Terminal` fornisce input/output ASCII buffered sulle porte 0/8
 - `machine.FrontPanel` coordina jam, step, run, stop e selettori esterni
+- `cpu.InstructionTiming` registra stati e cicli macchina effettivi
 
 ---
 
@@ -97,6 +98,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Bus memoria di profilo con ROM protetta e open bus a `0xFF`.
 - Terminale virtuale buffered componibile con il trace I/O.
 - Front panel testabile usato come coordinatore dalla CLI.
+- Timing Intel per opcode, condizioni e contatori cumulativi.
 - Test automatici sullo stato iniziale e sui mascheramenti.
 
 ---

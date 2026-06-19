@@ -420,7 +420,17 @@ func printDump(w io.Writer, c *cpu.CPU8008, cfg runConfig, loaded int, roms int,
 	fmt.Fprintf(w, "A=0x%02X B=0x%02X C=0x%02X D=0x%02X E=0x%02X H=0x%02X L=0x%02X\n", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
 	fmt.Fprintf(w, "PC=0x%04X SP=%d Halted=%v Stopped=%v\n", c.PC, c.SP, c.Halted, c.Stopped)
 	fmt.Fprintf(w, "Flags C=%v Z=%v S=%v P=%v\n", c.Carry, c.Zero, c.Sign, c.Parity)
+	fmt.Fprintf(w, "Timing instructions=%d states=%d last_states=%d last_cycles=%s\n",
+		c.InstructionCount, c.StateCount, c.LastTiming.States, formatCycles(c.LastTiming.MachineCycles()))
 	fmt.Fprintf(w, "Stack=%s\n", formatStack(c.Stack))
+}
+
+func formatCycles(cycles []cpu.MachineCycle) string {
+	parts := make([]string, len(cycles))
+	for i, cycle := range cycles {
+		parts[i] = string(cycle)
+	}
+	return "[" + strings.Join(parts, " ") + "]"
 }
 
 func printPanel(w io.Writer, state machine.FrontPanelState) {

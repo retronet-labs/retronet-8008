@@ -12,7 +12,7 @@ dipendere da una macchina storica specifica.
 
 ## Stato
 
-Sono completate le milestone 0-17:
+Sono completate le milestone 0-17 e la milestone 20:
 
 - core CPU, decoder e famiglie istruzionali 8008
 - memoria e I/O separati
@@ -23,6 +23,7 @@ Sono completate le milestone 0-17:
 - bus memoria mappato con ROM protetta
 - terminale ASCII buffered sulle porte convenzionali `0` e `8`
 - front panel con step/run/stop, jam/RST, switch, examine e deposit
+- timing Intel con stati, cicli PCI/PCR/PCW/PCC e contatori CPU
 
 La roadmap dettagliata e' in `docs/roadmap.md`.
 
@@ -52,6 +53,8 @@ package testato, senza una directory `tests/` separata.
 - Gli osservatori I/O non devono sostituire le callback delle periferiche.
 - `FrontPanel.Stop` arresta il loop esterno senza impostare artificialmente i
   flag CPU `Halted` o `Stopped`.
+- `Opcode.States` e' il massimo; `MinStates` copre condizioni non prese.
+- `StateCount` conta stati Intel, ognuno formato da due clock bifase.
 - Non aggiungere ROM storiche senza provenienza e licenza documentate.
 
 ## Verifica
@@ -76,7 +79,7 @@ Prima di un commit eseguire anche `gofmt` sui file Go modificati e
 
 Ordine consigliato:
 
-1. mappe memoria e I/O storiche verificate
-2. cassette e altre periferiche SCELBI/Intellec
-3. timing e T-state
-4. suite di conformance contro riferimenti indipendenti
+1. READY e interrupt al confine dei cicli macchina
+2. trace strutturato e debugger
+3. suite di conformance sintetica
+4. periferiche generiche configurabili

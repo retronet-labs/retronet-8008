@@ -54,12 +54,17 @@ func buildDecoder() [256]Opcode {
 		if isHaltOpcode(code) {
 			execute = executeHalt
 		}
+		minStates, states := stateRangeFor(code)
+		cycles, cycleCount := cyclesFor(code)
 		table[i] = Opcode{
-			Code:     code,
-			Mnemonic: mnemonicFor(code),
-			Length:   lengthFor(code),
-			States:   statesFor(code),
-			Execute:  execute,
+			Code:       code,
+			Mnemonic:   mnemonicFor(code),
+			Length:     lengthFor(code),
+			MinStates:  minStates,
+			States:     states,
+			CycleCount: cycleCount,
+			Cycles:     cycles,
+			Execute:    execute,
 		}
 	}
 	return table
@@ -84,32 +89,70 @@ func lengthFor(code byte) byte {
 	}
 }
 
-func statesFor(code byte) byte {
+func stateRangeFor(code byte) (byte, byte) {
+	if code&0xC7 == 0x40 || code&0xC7 == 0x42 {
+		return 9, 11
+	}
+	if code&0xC7 == 0x03 {
+		return 3, 5
+	}
 	switch lengthFor(code) {
 	case 2:
 		if code == 0x3E { // LMI
-			return 9
+			return 9, 9
 		}
-		return 8
+		return 8, 8
 	case 3:
-		return 11
+		return 11, 11
 	default:
 		if code == 0x00 || code == 0x01 || code == 0xFF {
-			return 4
+			return 4, 4
 		}
-		if code&0xC0 == 0xC0 && (code&0x07 == 0x07 || (code>>3)&0x07 == 0x07) {
-			return 8
+		if code&0xC0 == 0xC0 && (code>>3)&0x07 == 0x07 {
+			return 7, 7
+		}
+		if code&0xC0 == 0xC0 && code&0x07 == 0x07 {
+			return 8, 8
 		}
 		if code&0xC0 == 0x80 && code&0x07 == 0x07 {
-			return 8
+			return 8, 8
 		}
 		if isInputOpcode(code) {
-			return 8
+			return 8, 8
 		}
 		if isOutputOpcode(code) {
-			return 6
+			return 6, 6
 		}
-		return 5
+		return 5, 5
+	}
+}
+
+func cyclesFor(code byte) ([3]MachineCycle, byte) {
+	cycles := [3]MachineCycle{CyclePCI}
+	switch {
+	case code == 0x3E:
+		cycles[1], cycles[2] = CyclePCR, CyclePCW
+		return cycles, 3
+	case isLoadImmediateOpcode(code), isALUImmediateOpcode(code):
+		cycles[1] = CyclePCR
+		return cycles, 2
+	case code&0xC0 == 0xC0 && code != 0xFF && (code>>3)&0x07 == 0x07:
+		cycles[1] = CyclePCW
+		return cycles, 2
+	case code&0xC0 == 0xC0 && code&0x07 == 0x07:
+		cycles[1] = CyclePCR
+		return cycles, 2
+	case code&0xC0 == 0x80 && code&0x07 == 0x07:
+		cycles[1] = CyclePCR
+		return cycles, 2
+	case lengthFor(code) == 3:
+		cycles[1], cycles[2] = CyclePCR, CyclePCR
+		return cycles, 3
+	case isInputOpcode(code), isOutputOpcode(code):
+		cycles[1] = CyclePCC
+		return cycles, 2
+	default:
+		return cycles, 1
 	}
 }
 

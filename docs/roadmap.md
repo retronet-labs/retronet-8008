@@ -297,9 +297,28 @@ Contenuto:
 
 ---
 
+## Milestone 20 - Timing e T-state
+
+Stato: completata. Le milestone 18 e 19 restano intenzionalmente rinviate.
+
+Contenuto:
+
+- metadata `MachineCycle` per `PCI`, `PCR`, `PCW` e `PCC`
+- range `MinStates`/`States` per tutti i 256 opcode
+- timing condizionale effettivo per jump, call e return
+- correzione primaria Intel di `LMr` da 8 a 7 stati
+- `InstructionTiming` con condizione presa e cicli macchina
+- contatori CPU `InstructionCount` e `StateCount`
+- timing registrato anche per jam instruction
+- dump timing nella CLI
+- test su famiglie, condizioni, contatori e reset
+
+---
+
 ## Milestone successive
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare
 - mappe memoria storiche piu' precise per Intellec e SCELBI
 - cassette e altre periferiche virtuali
-- timing e T-state
+- READY e interrupt al confine dei cicli macchina
+- trace strutturato, debugger e conformance sintetica

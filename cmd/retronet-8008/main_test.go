@@ -29,6 +29,7 @@ func TestRunLoadsProgramAndPrintsDump(t *testing.T) {
 		"A=0x2A",
 		"PC=0x0003",
 		"Halted=true Stopped=true",
+		"Timing instructions=3 states=23 last_states=4 last_cycles=[PCI]",
 	}
 	for _, part := range wantParts {
 		if !strings.Contains(out, part) {

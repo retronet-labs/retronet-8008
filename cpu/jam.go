@@ -19,7 +19,12 @@ func (c *CPU8008) Jam(mem Memory, io IO, code byte, operands ...byte) error {
 	}
 	copy(inst.Operands[:], operands)
 
+	timing := c.instructionTiming(op)
 	c.Halted = false
 	c.Stopped = false
-	return op.Execute(c, mem, io, inst)
+	if err := op.Execute(c, mem, io, inst); err != nil {
+		return err
+	}
+	c.recordTiming(timing)
+	return nil
 }

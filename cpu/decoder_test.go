@@ -19,6 +19,12 @@ func TestOpcodeTableHas256Entries(t *testing.T) {
 		if op.Execute == nil {
 			t.Fatalf("OpcodeTable()[0x%02X].Execute = nil", i)
 		}
+		if op.MinStates == 0 || op.MinStates > op.States {
+			t.Fatalf("OpcodeTable()[0x%02X] state range = %d..%d", i, op.MinStates, op.States)
+		}
+		if op.CycleCount < 1 || op.CycleCount > 3 || len(op.MachineCycles()) != int(op.CycleCount) {
+			t.Fatalf("OpcodeTable()[0x%02X] cycle count = %d", i, op.CycleCount)
+		}
 	}
 }
 

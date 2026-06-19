@@ -30,6 +30,11 @@ type CPU8008 struct {
 	// fermano la CPU; Jam simula l'istruzione forzata da un interrupt esterno.
 	Halted  bool
 	Stopped bool
+
+	// InstructionCount e StateCount includono anche istruzioni jammed.
+	InstructionCount uint64
+	StateCount       uint64
+	LastTiming       InstructionTiming
 }
 
 // NewCPU8008 crea una CPU nello stato di reset storico: registri azzerati e
