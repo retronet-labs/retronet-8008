@@ -402,7 +402,7 @@ func parseFlags(args []string, stderr io.Writer) (runConfig, error) {
 	interruptRST := fs.String("interrupt-rst", "", "forza RST 0..7 prima del primo fetch")
 	terminalIn := fs.Uint("terminal-in-port", uint(machine.TerminalInputPort), "porta input del terminale")
 	terminalOut := fs.Uint("terminal-out-port", uint(machine.TerminalOutputPort), "porta output del terminale")
-	fs.StringVar(&cfg.binPath, "bin", "", "percorso del binario da caricare")
+	fs.StringVar(&cfg.binPath, "bin", "", "percorso della ROM/immagine raw da caricare (es. il .rom prodotto da retronet-asm)")
 	fs.StringVar(&cfg.profileName, "profile", "generic", "profilo macchina da usare")
 	fs.BoolVar(&cfg.listProfiles, "profiles", false, "elenca i profili macchina disponibili")
 	fs.Var(&cfg.roms, "rom", "carica una ROM di profilo nel formato nome=percorso; ripetibile")

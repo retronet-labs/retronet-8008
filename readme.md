@@ -17,13 +17,13 @@ repository.
 go test ./...
 
 # esegue un binario raw con la CLI minimale
-go run ./cmd/retronet-8008 -bin programma.bin -steps 1000
+go run ./cmd/retronet-8008 -bin programma.rom -steps 1000
 
 # disassembla 8 istruzioni senza eseguire
-go run ./cmd/retronet-8008 -bin programma.bin -disasm 8
+go run ./cmd/retronet-8008 -bin programma.rom -disasm 8
 
 # esegue stampando ogni istruzione
-go run ./cmd/retronet-8008 -bin programma.bin -steps 1000 -trace
+go run ./cmd/retronet-8008 -bin programma.rom -steps 1000 -trace
 
 # elenca profili macchina e slot ROM locali
 go run ./cmd/retronet-8008 -profiles
@@ -38,7 +38,7 @@ go run ./cmd/retronet-8008 -profile scelbi-8b -rom test=io-smoke.bin -input 0=0x
 go run ./cmd/retronet-8008 -profile scelbi-8b -rom test=io-smoke.bin -terminal-input Z -steps 8
 
 # mostra front panel, switch dati e byte memoria selezionato
-go run ./cmd/retronet-8008 -bin programma.bin -panel-switches 0x4B -panel-address 0x0100
+go run ./cmd/retronet-8008 -bin programma.rom -panel-switches 0x4B -panel-address 0x0100
 ```
 
 ---
