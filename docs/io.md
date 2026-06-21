@@ -82,7 +82,7 @@ con una periferica che produce input o riceve output sulla stessa porta.
 
 ---
 
-## Da implementare
+## Limiti e sviluppi
 
 - Periferiche storiche complete: cassette e interfacce verificate.
 - Mappe I/O storiche verificate per SCELBI e Intellec.

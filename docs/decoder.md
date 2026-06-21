@@ -1,9 +1,9 @@
 # Decoder e Step
 
 Il decoder trasforma un byte opcode in metadata eseguibili dal core. La tabella
-e il ciclo fetch-decode-execute sono completi; le famiglie gia' implementate
-agganciano una funzione esecutiva reale, mentre gli altri opcode terminano con
-un errore esplicito di istruzione non implementata.
+e il ciclo fetch-decode-execute sono completi: 250 encoding definiti agganciano
+una funzione esecutiva, mentre i sei slot non definiti dall'ISA terminano con
+un errore esplicito.
 
 ---
 
@@ -46,8 +46,9 @@ Il package `cpu` espone:
 - `Jam(mem Memory, io IO, code byte, operands ...byte) error`
 
 `Step` legge l'opcode da `PC`, incrementa `PC`, legge gli eventuali operandi
-secondo `Opcode.Length`, poi chiama la funzione esecutiva associata. Gli opcode
-non ancora implementati restituiscono `ErrUnimplementedOpcode`.
+secondo `Opcode.Length`, poi chiama la funzione esecutiva associata. Gli
+encoding non definiti `22`, `2A`, `32`, `38`, `39` e `3A` restituiscono
+`ErrUnimplementedOpcode`.
 
 Se `Halted` o `Stopped` sono veri, `Step` non accede alla memoria e restituisce
 `ErrCPUStopped`. `Jam` modella l'istruzione forzata da un interrupt esterno:
@@ -74,10 +75,14 @@ memoria e restituisce una rappresentazione testuale senza modificare stato CPU.
 - Errore `ErrNilIO` quando una istruzione I/O non riceve un bus I/O.
 - Errore tipizzato `UnimplementedOpcodeError`.
 - Test su tabella, lunghezze, mnemonici, fetch, PC e mapping porte.
+- Matrice di esecuzione e metadata per tutti i 256 byte opcode.
+- Fuzz test su decode, disassembly, fetch e limiti architetturali.
 
 ---
 
-## Da implementare
+## Limiti
 
-- Trace con snapshot registri e side effect.
-- Metadata temporali piu' accurati.
+- La tabella descrive cicli macchina e costi in stati, non le transizioni dei
+  singoli pin/T-state.
+- Il confronto corrente usa oracle interni test-only; manca ancora un confronto
+  differenziale con una seconda implementazione indipendente.

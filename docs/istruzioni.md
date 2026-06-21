@@ -268,7 +268,7 @@ corrente resta nello stack interno e l'esecuzione riparte dal vettore `n * 8`.
 
 ## Test coperti
 
-- `HLT` e alias `0x00`/`0x01`
+- `HLT` sugli encoding `0x00`, `0x01` e `0xFF`
 - `Step` bloccato dopo reset o halt
 - jam di `NOP` per entrare in stato running
 - validazione del numero di operandi jammed
@@ -322,6 +322,10 @@ Dopo due `Step`, `A = 0xA5` e la porta output `16` contiene `0xA5`.
 
 ---
 
-## Da implementare
+## Verifica trasversale
 
-- Trace con snapshot registri e side effect.
+- La matrice della milestone 25 esegue tutti i 250 encoding definiti e controlla
+  che i sei slot non definiti producano l'errore previsto.
+- Gli oracle test-only coprono esaustivamente ALU, flag, rotate e
+  incremento/decremento.
+- Il trace JSON include stato CPU prima/dopo, timing, memoria e I/O.

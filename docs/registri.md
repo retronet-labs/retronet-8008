@@ -55,6 +55,8 @@ e dagli helper opcode.
 
 ---
 
-## Da implementare
+## Stato
 
-- Nessuna semantica registro di base nota da aggiungere in questa fase.
+La semantica registro di base e' completa a livello di istruzione. Gli sviluppi
+futuri riguardano osservabilita' dei bus e macchine storiche, non nuovi registri
+del core.

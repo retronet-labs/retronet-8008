@@ -54,6 +54,6 @@ livelli utili di ritorno quando una voce e' occupata dal PC corrente.
 
 ---
 
-## Da implementare
+## Limiti e sviluppi
 
 - Dettagli temporali della sequenza di interrupt reale.

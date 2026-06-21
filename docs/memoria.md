@@ -73,7 +73,7 @@ ROM/RAM ancora da verificare.
 
 ---
 
-## Da implementare
+## Limiti e sviluppi
 
 - Mappe ROM/RAM storiche verificate per SCELBI e Intellec.
 - Eventuale bank switching a livello macchina.

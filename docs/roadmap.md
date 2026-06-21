@@ -60,9 +60,9 @@ Contenuto:
 - fetch opcode da `PC`
 - incremento `PC` mascherato a 14 bit
 - tabella decoder da 256 opcode
-- errore esplicito per opcode non implementati
+- errore esplicito per i sei encoding non definiti dall'ISA
 - `Step()`
-- test su decoder, fetch, PC e opcode non implementati
+- test su decoder, fetch, PC e encoding non definiti
 
 ---
 
@@ -136,7 +136,7 @@ Stato: completata.
 
 Contenuto:
 
-- `HLT` e alias `0x00`/`0x01`
+- `HLT` sugli encoding `0x00`, `0x01` e `0xFF`
 - helper mini-assembler `HLT()`
 - `Step` bloccato da `Halted` o `Stopped`
 - errore `ErrCPUStopped`
@@ -297,7 +297,38 @@ Contenuto:
 
 ---
 
-## Milestone 20 - Timing e T-state
+## Milestone 18 - Mappe macchina storiche
+
+Stato: rinviata in attesa di fonti tecniche sufficienti.
+
+Contenuto previsto:
+
+- mappe ROM/RAM verificate per SCELBI 8H/8B e Intellec 8
+- porte I/O e protocolli ricavati da schemi o manuali primari
+- distinzione esplicita tra configurazioni di schede e revisioni hardware
+- test macchina basati su indirizzi e segnali documentati
+
+Questa milestone non deve trasformare le convenzioni correnti `0`/`8` in dati
+storici senza una fonte verificabile.
+
+---
+
+## Milestone 19 - ROM storiche
+
+Stato: rinviata in attesa di provenienza e licenze chiare.
+
+Contenuto previsto:
+
+- catalogo di immagini con origine, versione, dimensione e SHA-256
+- licenza o permesso di redistribuzione per ogni file incluso
+- loader e profilo coerenti con la mappa della milestone 18
+- test di avvio e comportamento confrontabili con riferimenti indipendenti
+
+La sola corrispondenza di un hash non concede diritti di redistribuzione.
+
+---
+
+## Milestone 20 - Timing e cicli macchina
 
 Stato: completata. Le milestone 18 e 19 restano intenzionalmente rinviate.
 
@@ -389,8 +420,35 @@ Contenuto:
 
 ---
 
+## Milestone 25 - Conformance esaustiva del core
+
+Stato: completata. Non richiede profili o ROM storiche.
+
+Contenuto:
+
+- matrice dei 256 byte opcode con 250 encoding definiti e 6 non definiti
+- verifica completa di lunghezza, stati e cicli macchina del decoder
+- esecuzione di ogni encoding definito e controllo degli errori per gli altri
+- oracle test-only ALU su tutte le combinazioni di gruppo, A, operando e Carry
+- verifica esaustiva di rotate e incremento/decremento
+- matrice degli opcode ALU registro, memoria e immediati
+- fuzz target per decoder/disassembler e fetch con wrap a 14 bit
+- fuzz target per PC, stack e SP entro i limiti architetturali
+- correzione dei mnemonici `INM`/`DCM` sugli slot non definiti
+- correzione del ciclo macchina dell'alias `HLT` `0xFF`
+
+La milestone usa oracle interni separati dall'implementazione, ma non pretende
+di sostituire un confronto con un secondo emulatore indipendente.
+
+---
+
 ## Milestone successive
 
+- milestone 26: motore microciclo/T-state ed eventi bus osservabili
+- milestone 27: simboli e source-level debugging con `retronet-asm`
+- milestone 28: save-state, restore e replay deterministico
+- milestone 29: terminale interattivo e throttling configurabile
+- milestone 30: formati immagine strutturati e CI automatica
 - milestone 18: mappe memoria/I/O storiche, quando le fonti saranno sufficienti
 - milestone 19: ROM storiche, solo con provenienza e licenza chiare
 - cassette e altre periferiche storiche dopo la verifica di schemi e protocolli

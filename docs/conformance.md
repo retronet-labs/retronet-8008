@@ -49,6 +49,44 @@ le invarianti del progetto senza dipendere dalle milestone storiche rinviate.
 
 ---
 
+## Conformance esaustiva del core
+
+La milestone 25 aggiunge test direttamente nel package `cpu`:
+
+- tutti i 256 byte attraversano decoder, metadata ed esecuzione
+- i 250 encoding definiti devono completare una istruzione
+- `22`, `2A`, `32`, `38`, `39` e `3A` devono produrre
+  `ErrUnimplementedOpcode`
+- un oracle matematico separato verifica tutte le combinazioni ALU: otto gruppi,
+  256 accumulatori, 256 operandi e due valori Carry
+- rotate e incremento/decremento sono verificati su ogni byte possibile
+- la matrice ALU controlla anche selezione registro, `M` e immediati
+
+Gli oracle sono codice test-only e non chiamano le primitive ALU per calcolare
+il risultato atteso. Questa e' una verifica differenziale interna: puo'
+individuare divergenze tra core e modello di test, ma non e' una certificazione
+esterna dell'ISA.
+
+Esecuzione normale:
+
+```powershell
+go test -count=1 ./cpu
+```
+
+I fuzz target includono un corpus iniziale con tutti i 256 opcode. Nel normale
+`go test` vengono eseguiti i seed; una campagna esplicita puo' essere avviata con:
+
+```powershell
+go test ./cpu -run=^$ -fuzz=FuzzDecodeDisassemble -fuzztime=30s
+go test ./cpu -run=^$ -fuzz=FuzzStepMaintainsArchitecturalBounds -fuzztime=30s
+```
+
+Resta utile un futuro confronto con SIMH o un'altra implementazione indipendente,
+quando ambiente, versione di riferimento e casi di scambio saranno fissati in
+modo riproducibile.
+
+---
+
 ## ROM locali opzionali
 
 `VerifyLocalROM` calcola dimensione e SHA-256 in streaming. `ROMExpectation`

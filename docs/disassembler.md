@@ -54,4 +54,5 @@ il flusso effettivo del programma.
 
 - Non esiste ancora un formato simbolico con label.
 - Il disassembler non annota stati, flag o side effect.
-- Il trace non include ancora snapshot registri per ogni istruzione.
+- Il trace testuale `-trace` resta compatto; `-trace-json` include invece copie
+  complete della CPU prima e dopo ogni istruzione, timing e side effect.

@@ -2,9 +2,9 @@
 
 L'Intel 8008 e' una CPU a 8 bit con program counter a 14 bit, sette registri
 visibili al programmatore, quattro flag principali e uno stack interno di
-indirizzi. Il core di questo progetto modella prima il comportamento a livello
-di istruzione; timing, bus multiplexato e T-state saranno aggiunti solo dopo una
-base funzionale solida.
+indirizzi. Il core modella il comportamento a livello di istruzione e registra
+stati e cicli macchina. Non riproduce ancora il bus multiplexato e ogni singola
+transizione dei T-state.
 
 ---
 
@@ -89,7 +89,7 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Istruzioni ALU con registri, `M` e immediati.
 - Istruzioni rotate dell'accumulatore.
 - Istruzioni jump, call, return e restart con stack interno.
-- `HLT` e alias `0x00`/`0x01`.
+- `HLT` sugli encoding `0x00`, `0x01` e `0xFF`.
 - Istruzioni `INP` e `OUT` su bus I/O separato.
 - Profili macchina `generic`, `intellec-8`, `scelbi-8b` e `scelbi-8h`.
 - Caricamento ROM locali tramite slot di profilo.
@@ -103,14 +103,16 @@ stile `go-4004`. I vincoli hardware sono concentrati in helper piccoli:
 - Debugger strutturato con eventi CPU, memoria, I/O, timing e WAIT.
 - Conformance sintetica isolata e verifica hash per ROM locali opzionali.
 - Bus periferiche configurabile con ownership e conflitti di porta.
-- Test automatici sullo stato iniziale e sui mascheramenti.
+- Matrice completa dei 256 opcode e oracle funzionali esaustivi.
+- Fuzz test su decoder, disassembler e vincoli a 14/3 bit.
 
 ---
 
-## Da implementare
+## Limiti e sviluppi
 
 - ROM storiche reali, solo quando provenance e licenze saranno chiare.
 - Mappe memoria storiche piu' precise.
 - Periferiche SCELBI/Intellec complete.
 - Dettagli elettrici e temporali di interrupt e jam instruction reali.
-- Timing e T-state.
+- Emissione delle transizioni di pin e dei singoli T-state; i costi aggregati
+  per istruzione e ciclo macchina sono gia' disponibili.

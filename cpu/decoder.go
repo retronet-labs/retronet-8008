@@ -130,6 +130,8 @@ func stateRangeFor(code byte) (byte, byte) {
 func cyclesFor(code byte) ([3]MachineCycle, byte) {
 	cycles := [3]MachineCycle{CyclePCI}
 	switch {
+	case isHaltOpcode(code):
+		return cycles, 1
 	case code == 0x3E:
 		cycles[1], cycles[2] = CyclePCR, CyclePCW
 		return cycles, 3
@@ -176,9 +178,9 @@ func mnemonicFor(code byte) string {
 			return "LMI"
 		}
 		return fmt.Sprintf("L%sI", registerName(dst))
-	case code&0xC7 == 0x00:
+	case isIncrementOpcode(code):
 		return fmt.Sprintf("IN%s", registerName((code>>3)&0x07))
-	case code&0xC7 == 0x01:
+	case isDecrementOpcode(code):
 		return fmt.Sprintf("DC%s", registerName((code>>3)&0x07))
 	case code&0xC7 == 0x03:
 		return fmt.Sprintf("R%s%s", falseTruePrefix(code), conditionName((code>>3)&0x03))

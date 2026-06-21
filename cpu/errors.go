@@ -12,7 +12,7 @@ var (
 	// ErrNilIO segnala che un'istruzione I/O e' stata eseguita senza bus I/O.
 	ErrNilIO = errors.New("bus I/O 8008 non inizializzato")
 
-	// ErrUnimplementedOpcode segnala un opcode valido nel decoder ma non ancora eseguito.
+	// ErrUnimplementedOpcode segnala uno dei sei encoding non definiti dall'ISA 8008.
 	ErrUnimplementedOpcode = errors.New("opcode 8008 non implementato")
 
 	// ErrCPUStopped segnala che Step e' stato chiamato mentre la CPU e' ferma.

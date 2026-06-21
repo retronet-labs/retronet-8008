@@ -58,9 +58,12 @@ La funzione interna che aggiorna `Zero`, `Sign` e `Parity` usa il byte risultato
 - Rotate aggiorna solo Carry e lascia invariati `Zero`, `Sign` e `Parity`.
 - Jump, call e return condizionali leggono i flag senza modificarli.
 - `INP` e `OUT` non modificano i flag.
+- Un oracle test-only verifica esaustivamente tutte le combinazioni di gruppo
+  ALU, accumulatore, operando e Carry iniziale.
 
 ---
 
-## Da implementare
+## Limiti
 
-- Eventuali dettagli temporali delle istruzioni condizionali.
+- Il timing preso/non preso delle istruzioni condizionali e' modellato a livello
+  di istruzione; non sono ancora emessi i singoli T-state.

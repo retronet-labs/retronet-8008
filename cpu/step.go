@@ -3,7 +3,7 @@ package cpu
 // Step esegue il ciclo fetch-decode-execute di una singola istruzione.
 //
 // Step consuma opcode e operandi, aggiorna il PC a 14 bit e invoca la funzione
-// esecutiva registrata nel decoder. Gli opcode non ancora implementati
+// esecutiva registrata nel decoder. I sei encoding non definiti dall'ISA
 // restituiscono ErrUnimplementedOpcode. Se la CPU e' ferma, Step non accede al
 // bus e restituisce ErrCPUStopped.
 func (c *CPU8008) Step(mem Memory, io IO) error {

@@ -73,13 +73,16 @@ Il progetto ha completato le prime milestone fondamentali:
 - trace JSON e debugger con breakpoint/watchpoint
 - conformance sintetica e verifica SHA-256 di ROM locali
 - periferiche configurabili con ownership e loopback generico
+- conformance esaustiva ALU e matrice completa dei 256 opcode
+- fuzz test per decoder, disassembler e vincoli architetturali
 - documentazione italiana iniziale
 
-Sono gia' modellati registri, flag, program counter a 14 bit, stack interno,
-reset storico in stato fermo, memoria diretta, porte I/O, metadata del decoder e
-le famiglie istruzionali iniziali eseguibili. I profili storici sono scheletri
-senza ROM distribuite nel repository. Gli opcode non ancora implementati
-restituiscono un errore esplicito.
+Sono modellati registri, flag, program counter a 14 bit, stack interno, reset
+storico in stato fermo, memoria diretta, porte I/O, metadata del decoder e tutte
+le famiglie istruzionali documentate. Dei 256 byte possibili, 250 sono encoding
+definiti; `22`, `2A`, `32`, `38`, `39` e `3A` sono slot non definiti e
+restituiscono `ErrUnimplementedOpcode`. I profili storici restano scheletri
+senza ROM distribuite nel repository.
 
 ---
 
@@ -181,30 +184,15 @@ radice ed e' importabile da CLI, esempi e test.
 
 # Roadmap breve
 
-1. Bootstrap del progetto. Completato.
-2. Stato CPU base. Completato.
-3. Memoria diretta a 16 KB e I/O separato. Completato.
-4. Fetch, decoder e `Step`. Completato.
-5. Load e move. Completato.
-6. ALU e flag. Completato.
-7. Rotate. Completato.
-8. Control flow e stack interno. Completato.
-9. HLT, stopped e jam instruction. Completato.
-10. I/O istruzionale. Completato.
-11. CLI runner e tooling minimo. Completato.
-12. Disassembler minimale. Completato.
-13. Trace istruzione per istruzione. Completato.
-14. Profili macchina e caricamento ROM locali. Completato.
-15. Profili SCELBI/Intellec concreti e I/O callback. Completato.
-16. Bus memoria mappato e protezione ROM. Completato.
-17. Terminale virtuale buffered. Completato.
-18. Front panel e coordinamento esecuzione. Completato.
-19. Mappe e ROM storiche verificate. Rinviato in attesa delle fonti.
-20. Timing Intel e cicli macchina. Completato.
-21. READY e interrupt al confine PCI. Completato.
-22. Trace strutturato e debugger. Completato.
-23. Conformance sintetica e verifica ROM locale. Completato.
-24. Periferiche generiche configurabili. Completato.
+- Milestone 0-17: bootstrap, core, tooling, profili e front panel. Completate.
+- Milestone 18: mappe storiche verificate. Rinviata in attesa delle fonti.
+- Milestone 19: ROM storiche. Rinviata in attesa di provenienza e licenze.
+- Milestone 20: timing Intel e cicli macchina. Completata.
+- Milestone 21: READY e interrupt al confine PCI. Completata.
+- Milestone 22: trace strutturato e debugger. Completata.
+- Milestone 23: conformance sintetica e verifica ROM locale. Completata.
+- Milestone 24: periferiche generiche configurabili. Completata.
+- Milestone 25: matrice opcode, oracle esaustivi e fuzz test. Completata.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
@@ -214,10 +202,12 @@ La roadmap dettagliata vive in `docs/roadmap.md`.
 
 - La CLI carica binari raw e ROM locali via profilo, senza formati ROM
   strutturati.
-- Le famiglie istruzionali principali sono implementate a livello funzionale.
+- Le famiglie istruzionali documentate sono implementate a livello funzionale,
+  ma non ancora validate contro un secondo emulatore indipendente.
 - Il repository non include ROM storiche.
 - Le porte callback `0` e `8` sono convenzioni di test, non mappe storiche
   definitive.
 - I profili storici proteggono le ROM caricate, ma non dichiarano ancora una
   ripartizione ROM/RAM storicamente verificata.
-- Timing, T-state e dettagli elettrici dell'interrupt reale sono rimandati a milestone future.
+- I costi in stati e i cicli macchina sono modellati; le singole transizioni di
+  pin/T-state e i dettagli elettrici dell'interrupt reale non lo sono ancora.

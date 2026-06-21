@@ -12,7 +12,7 @@ dipendere da una macchina storica specifica.
 
 ## Stato
 
-Sono completate le milestone 0-17 e le milestone 20-24:
+Sono completate le milestone 0-17 e le milestone 20-25:
 
 - core CPU, decoder e famiglie istruzionali 8008
 - memoria e I/O separati
@@ -28,6 +28,8 @@ Sono completate le milestone 0-17 e le milestone 20-24:
 - trace JSON e debugger con breakpoint/watchpoint
 - suite conformance sintetica e verifica ROM locale size/SHA-256
 - bus periferiche configurabile, terminale su porte arbitrarie e loopback
+- matrice di tutti i 256 opcode, oracle ALU/rotate/incremento/decremento
+  esaustivi e fuzz test sulle invarianti architetturali
 
 La roadmap dettagliata e' in `docs/roadmap.md`.
 
@@ -47,6 +49,8 @@ package testato, senza una directory `tests/` separata.
 - Tutti gli indirizzi CPU sono mascherati a 14 bit (`0x0000-0x3FFF`).
 - Il reset storico lascia la CPU in stato `Stopped/Halted`.
 - L'opcode `0xFF` e' un alias di `HLT`, non un move `M,M`.
+- Gli encoding `22`, `2A`, `32`, `38`, `39` e `3A` non sono definiti
+  dall'ISA e devono restituire `ErrUnimplementedOpcode`.
 - `MemoryBus` restituisce `0xFF` per memoria non mappata.
 - Le scritture CPU in ROM o memoria non mappata vengono ignorate.
 - `MemoryKindMixed` resta scrivibile; `LoadROM` rende read-only soltanto i byte
@@ -90,5 +94,8 @@ Prima di un commit eseguire anche `gofmt` sui file Go modificati e
 
 Ordine consigliato:
 
-1. milestone 18: mappe storiche, quando saranno disponibili fonti sufficienti
-2. milestone 19: ROM storiche, solo con provenienza e licenza
+1. milestone 26: motore microciclo/T-state ed eventi bus osservabili
+2. milestone 27: simboli e source-level debugging con `retronet-asm`
+3. milestone 28: save-state, restore e replay deterministico
+4. milestone 18: mappe storiche, quando saranno disponibili fonti sufficienti
+5. milestone 19: ROM storiche, solo con provenienza e licenza
