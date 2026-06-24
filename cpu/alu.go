@@ -1,10 +1,6 @@
 package cpu
 
-import (
-	"math/bits"
-
-	"github.com/retronet-labs/retronet-hardware/bridge/i8008"
-)
+import "github.com/retronet-labs/retronet-hardware/bridge/i8008"
 
 func isALUImmediateOpcode(code byte) bool {
 	return code&0xC7 == 0x04
@@ -62,11 +58,11 @@ func executeIncrement(c *CPU8008, mem Memory, _ IO, inst Instruction) error {
 	if err != nil {
 		return err
 	}
-	value++
+	value, zero, sign, parity := i8008.Increment(value)
 	if err := c.writeRegister(r, value, mem); err != nil {
 		return err
 	}
-	c.updateZeroSignParity(value)
+	c.Zero, c.Sign, c.Parity = zero, sign, parity
 	return nil
 }
 
@@ -76,11 +72,11 @@ func executeDecrement(c *CPU8008, mem Memory, _ IO, inst Instruction) error {
 	if err != nil {
 		return err
 	}
-	value--
+	value, zero, sign, parity := i8008.Decrement(value)
 	if err := c.writeRegister(r, value, mem); err != nil {
 		return err
 	}
-	c.updateZeroSignParity(value)
+	c.Zero, c.Sign, c.Parity = zero, sign, parity
 	return nil
 }
 
@@ -97,14 +93,4 @@ func (c *CPU8008) executeALU(group byte, value byte) {
 	if group&0x07 != i8008.GroupCMP {
 		c.A = result
 	}
-}
-
-func (c *CPU8008) updateZeroSignParity(value byte) {
-	c.Zero = value == 0
-	c.Sign = value&0x80 != 0
-	c.Parity = evenParity(value)
-}
-
-func evenParity(value byte) bool {
-	return bits.OnesCount8(value)%2 == 0
 }
