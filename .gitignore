@@ -4,3 +4,7 @@ tmp/
 /retronet-8008
 /retronet-8008.exe
 *.test
+
+# Workspace di sviluppo locale multi-repo (delega ALU a retronet-hardware/logic).
+go.work
+go.work.sum

@@ -1,6 +1,10 @@
 package cpu
 
-import "math/bits"
+import (
+	"math/bits"
+
+	"github.com/retronet-labs/retronet-hardware/bridge/i8008"
+)
 
 func isALUImmediateOpcode(code byte) bool {
 	return code&0xC7 == 0x04
@@ -80,54 +84,19 @@ func executeDecrement(c *CPU8008, mem Memory, _ IO, inst Instruction) error {
 	return nil
 }
 
+// executeALU delega l'intero gruppo ALU dell'8008 alla ALU costruita a porte di
+// RetroNet Logic, tramite l'adattatore i8008. L'adattatore restituisce risultato
+// e flag già nella convenzione 8008 (incluso borrow = NOT carry per le
+// sottrazioni). Per CMP il risultato non viene memorizzato.
 func (c *CPU8008) executeALU(group byte, value byte) {
-	switch group & 0x07 {
-	case 0: // ADD
-		c.add(value, false)
-	case 1: // ADC
-		c.add(value, c.Carry)
-	case 2: // SUB
-		c.sub(value, false, true)
-	case 3: // SBB
-		c.sub(value, c.Carry, true)
-	case 4: // AND
-		c.A &= value
-		c.Carry = false
-		c.updateZeroSignParity(c.A)
-	case 5: // XOR
-		c.A ^= value
-		c.Carry = false
-		c.updateZeroSignParity(c.A)
-	case 6: // OR
-		c.A |= value
-		c.Carry = false
-		c.updateZeroSignParity(c.A)
-	default: // CMP
-		c.sub(value, false, false)
+	result, flags := i8008.ALU(group, c.A, value, c.Carry)
+	c.Carry = flags.Carry
+	c.Zero = flags.Zero
+	c.Sign = flags.Sign
+	c.Parity = flags.Parity
+	if group&0x07 != i8008.GroupCMP {
+		c.A = result
 	}
-}
-
-func (c *CPU8008) add(value byte, carryIn bool) {
-	result := uint16(c.A) + uint16(value)
-	if carryIn {
-		result++
-	}
-	c.A = byte(result)
-	c.Carry = result > 0xFF
-	c.updateZeroSignParity(c.A)
-}
-
-func (c *CPU8008) sub(value byte, borrowIn bool, store bool) {
-	result := int(c.A) - int(value)
-	if borrowIn {
-		result--
-	}
-	out := byte(result)
-	c.Carry = result < 0
-	if store {
-		c.A = out
-	}
-	c.updateZeroSignParity(out)
 }
 
 func (c *CPU8008) updateZeroSignParity(value byte) {
