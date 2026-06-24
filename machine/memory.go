@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 var (

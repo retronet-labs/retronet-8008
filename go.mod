@@ -1,4 +1,4 @@
-module retronet-8008
+module github.com/retronet-labs/retronet-8008
 
 go 1.26.2
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 // TraceEventKind classifica gli eventi strutturati del debugger.

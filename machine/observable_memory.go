@@ -3,7 +3,7 @@ package machine
 import (
 	"sync"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 // MemoryWrite descrive una scrittura richiesta e il valore effettivo finale.

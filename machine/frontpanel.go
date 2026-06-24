@@ -6,7 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 var (

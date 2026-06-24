@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 func TestTerminalConsumesQueuedInputAndFallsBackToLatch(t *testing.T) {

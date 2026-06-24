@@ -4,8 +4,8 @@ package conformance
 import (
 	"fmt"
 
-	"retronet-8008/cpu"
-	"retronet-8008/machine"
+	"github.com/retronet-labs/retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/machine"
 )
 
 // Context raccoglie i componenti isolati di un singolo caso.

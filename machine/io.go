@@ -1,6 +1,6 @@
 package machine
 
-import "retronet-8008/cpu"
+import "github.com/retronet-labs/retronet-8008/cpu"
 
 // InputCallback viene chiamata quando la CPU legge una porta di input.
 //

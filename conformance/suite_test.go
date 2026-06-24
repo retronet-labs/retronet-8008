@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"retronet-8008/cpu"
-	"retronet-8008/machine"
+	"github.com/retronet-labs/retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/machine"
 )
 
 func TestSyntheticSuitePasses(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 func TestFrontPanelRejectsMissingComponents(t *testing.T) {

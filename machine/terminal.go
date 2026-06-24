@@ -4,7 +4,7 @@ import (
 	"io"
 	"sync"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 const (

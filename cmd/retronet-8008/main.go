@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	"retronet-8008/conformance"
-	"retronet-8008/cpu"
-	"retronet-8008/machine"
+	"github.com/retronet-labs/retronet-8008/conformance"
+	"github.com/retronet-labs/retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/machine"
 )
 
 type runConfig struct {

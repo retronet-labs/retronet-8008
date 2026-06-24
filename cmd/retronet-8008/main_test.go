@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"retronet-8008/cpu"
-	"retronet-8008/machine"
+	"github.com/retronet-labs/retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/machine"
 )
 
 func TestRunLoadsProgramAndPrintsDump(t *testing.T) {

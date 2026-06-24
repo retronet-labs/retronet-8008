@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 const DefaultStepLimit = uint64(1000)

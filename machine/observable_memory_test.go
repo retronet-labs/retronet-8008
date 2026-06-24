@@ -3,7 +3,7 @@ package machine
 import (
 	"testing"
 
-	"retronet-8008/cpu"
+	"github.com/retronet-labs/retronet-8008/cpu"
 )
 
 func TestObservableMemoryReportsEffectiveWrite(t *testing.T) {
