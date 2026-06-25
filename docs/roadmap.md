@@ -442,6 +442,17 @@ di sostituire un confronto con un secondo emulatore indipendente.
 
 ---
 
+## Release v0.1.0 - candidata
+
+Stato: consolidamento locale completato; tag rinviato al commit candidato con
+CI verde.
+
+Gate e limiti dichiarati sono raccolti in `docs/release-v0.1.0.md`. Il workflow
+CI esegue formattazione, `go vet`, suite completa e conformance sintetica; il
+repo vetrina verifica inoltre la catena `retronet-asm` -> emulatore 8008.
+
+---
+
 ## Milestone successive
 
 - milestone 26: motore microciclo/T-state ed eventi bus osservabili

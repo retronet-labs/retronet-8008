@@ -196,6 +196,9 @@ radice ed e' importabile da CLI, esempi e test.
 
 La roadmap dettagliata vive in `docs/roadmap.md`.
 
+La checklist che definisce il perimetro e i gate della prima release pubblica
+e' in [`docs/release-v0.1.0.md`](docs/release-v0.1.0.md).
+
 ---
 
 # Limiti noti
