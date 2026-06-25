@@ -1,5 +1,7 @@
 package cpu
 
+import "github.com/retronet-labs/retronet-hardware/bridge/i8008"
+
 func isRotateOpcode(code byte) bool {
 	switch code {
 	case 0x02, 0x0A, 0x12, 0x1A:
@@ -10,31 +12,17 @@ func isRotateOpcode(code byte) bool {
 }
 
 func executeRotate(c *CPU8008, _ Memory, _ IO, inst Instruction) error {
+	// Le rotazioni sono delegate allo shifter a gate di RetroNet Logic, tramite
+	// l'adattatore i8008. Toccano solo il flag Carry.
 	switch inst.Opcode.Code {
 	case RLC():
-		old := c.A
-		c.Carry = old&0x80 != 0
-		c.A = (old << 1) | (old >> 7)
+		c.A, c.Carry = i8008.RotateLeftCircular(c.A)
 	case RRC():
-		old := c.A
-		c.Carry = old&0x01 != 0
-		c.A = (old >> 1) | (old << 7)
+		c.A, c.Carry = i8008.RotateRightCircular(c.A)
 	case RAL():
-		old := c.A
-		carryIn := byte(0)
-		if c.Carry {
-			carryIn = 1
-		}
-		c.Carry = old&0x80 != 0
-		c.A = (old << 1) | carryIn
+		c.A, c.Carry = i8008.RotateLeftThroughCarry(c.A, c.Carry)
 	case RAR():
-		old := c.A
-		carryIn := byte(0)
-		if c.Carry {
-			carryIn = 0x80
-		}
-		c.Carry = old&0x01 != 0
-		c.A = (old >> 1) | carryIn
+		c.A, c.Carry = i8008.RotateRightThroughCarry(c.A, c.Carry)
 	}
 	return nil
 }
